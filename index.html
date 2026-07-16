@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>공정관리</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    :root{--bg:#0d1117;--sf:#161b22;--sf2:#1c2128;--bd:#30363d;--bd2:#21262d;--tx:#e6edf3;--tx2:#8b949e;--ac:#2d5a8e;--r:6px;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html{overflow-y:scroll;}
+    body{background:var(--bg);color:var(--tx);font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:13px;min-height:100vh;}
+
+    /* Header */
+    header{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 16px;position:sticky;top:0;z-index:200;}
+    .hdr{display:flex;align-items:center;gap:8px;height:48px;max-width:1400px;margin:0 auto;}
+    .hdr-title{font-size:15px;font-weight:600;}
+    .hdr-title small{font-size:11px;color:var(--tx2);font-weight:400;margin-left:6px;}
+    .tab-nav{display:flex;gap:2px;margin:0 8px;}
+    .tab-btn{padding:4px 14px;border-radius:var(--r);border:1px solid transparent;background:none;color:var(--tx2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;}
+    .tab-btn:hover{background:var(--sf2);color:var(--tx);}
+    .tab-btn.on{background:var(--sf2);border-color:var(--bd);color:var(--tx);font-weight:600;}
+    .hdr-sep{width:1px;height:22px;background:var(--bd);}
+    .flex1{flex:1;}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:var(--r);border:1px solid var(--bd);background:var(--sf2);color:var(--tx);font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap;}
+    .btn:hover{background:var(--bd2);}
+    .btn-primary{background:var(--ac);border-color:var(--ac);color:#fff;}
+    .btn-primary:hover{background:#388bfd;border-color:#388bfd;}
+    .btn-green{background:#196127;border-color:#196127;color:#fff;}
+    .btn-green:hover{background:#2ea043;}
+    .btn-sm{padding:3px 8px;font-size:11px;}
+    .file-inp{display:none;}
+
+    /* Pages */
+    .page{max-width:1400px;margin:0 auto;padding:16px;}
+    .page.hidden{display:none;}
+
+    /* Controls */
+    .ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:9px 12px;}
+    .ctrl-sep{width:1px;height:18px;background:var(--bd);margin:0 2px;}
+    .ctrl-lbl{font-size:11px;color:var(--tx2);white-space:nowrap;}
+    .date-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:4px 8px;font-family:inherit;}
+    .date-inp:focus{outline:none;border-color:#388bfd;}
+    .import-status{font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:4px;}
+
+    /* Proc table */
+    .tbl-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:16px;overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;table-layout:fixed;}
+    td,th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    thead th{background:var(--sf2);color:var(--tx2);font-size:11px;font-weight:600;padding:8px 10px;text-align:center;border-bottom:1px solid var(--bd);white-space:nowrap;}
+    thead th.lft{text-align:left;}
+    tbody tr{border-bottom:1px solid var(--bd2);transition:background .1s;}
+    tbody tr:last-child{border-bottom:none;}
+    tbody tr:hover{background:var(--sf2);}
+    td{padding:7px 10px;font-size:12px;text-align:center;vertical-align:middle;}
+    td.lft{text-align:left;font-weight:500;}
+    td.unit{color:var(--tx2);font-size:11px;}
+    tfoot td{background:var(--sf2);font-weight:600;font-size:12px;border-top:1px solid var(--bd);padding:8px 10px;text-align:center;}
+    .plan-inp{width:72px;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:3px 6px;text-align:right;font-family:inherit;}
+    .plan-inp:focus{outline:none;border-color:#388bfd;}
+    .plan-inp.locked{background:transparent;border-color:transparent;color:var(--tx2);cursor:default;pointer-events:none;}
+    .lock-icon{font-size:10px;color:var(--tx2);cursor:pointer;margin-left:2px;vertical-align:middle;}
+    .lock-icon:hover{color:var(--tx);}
+    .factor-inp{width:52px;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:3px 6px;text-align:center;font-family:inherit;}
+    .factor-inp:focus{outline:none;border-color:#388bfd;}
+    .pbar-wrap{display:flex;align-items:center;gap:6px;}
+    .pbar{flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden;min-width:36px;}
+    .pbar-fill{height:100%;border-radius:3px;transition:width .4s;}
+    .pct-val{font-size:11px;font-weight:600;min-width:38px;text-align:right;white-space:nowrap;}
+
+    /* Check List */
+    .cs-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+    .cs-search{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:5px 10px;font-family:inherit;width:200px;}
+    .cs-search:focus{outline:none;border-color:#388bfd;}
+    .cs-tag-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:5px 10px;font-family:inherit;width:160px;}
+    .cs-tag-inp:focus{outline:none;border-color:#388bfd;}
+    .cs-select{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:4px 8px;font-family:inherit;cursor:pointer;max-width:160px;}
+    .cs-select:focus{outline:none;border-color:#388bfd;}
+    .filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:9px 12px;}
+
+    /* Virtual scroll */
+    .cs-wrap{border:1px solid var(--bd);border-radius:var(--r);overflow:auto;background:var(--sf);position:relative;}
+    .cs-hdr{display:flex;position:sticky;top:0;z-index:20;background:var(--sf2);border-bottom:2px solid var(--bd);min-width:max-content;}
+    .cs-hdr-cell{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--tx2);padding:6px 4px;border-right:1px solid var(--bd2);height:36px;}
+    .cs-hdr-cell.lft{justify-content:flex-start;padding-left:8px;}
+    .cs-virtual{position:relative;}
+    .cs-row{display:flex;align-items:center;border-bottom:1px solid var(--bd2);min-width:max-content;height:36px;}
+    .cs-row:hover{background:var(--sf2);}
+    .cs-row:hover .cs-col-tag{background:var(--sf2);}
+    .cs-col-tag{width:130px;min-width:130px;flex-shrink:0;position:sticky;left:0;z-index:5;background:var(--sf);border-right:2px solid var(--bd);font-size:12px;font-weight:600;padding:0 8px;height:36px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .cs-hdr .cs-col-tag{background:var(--sf2);z-index:25;}
+    .cs-col-item{width:88px;min-width:88px;flex-shrink:0;border-right:1px solid var(--bd2);height:36px;display:flex;align-items:center;justify-content:center;position:relative;}
+    .cs-col-item.has-val{background:#071a0d;}
+    .cs-qty-txt{color:#3fb950;font-size:12px;font-weight:600;}
+    .cs-qty-inp{width:76px;background:transparent;border:none;color:#3fb950;font-size:12px;font-weight:600;text-align:center;font-family:inherit;padding:2px 4px;}
+    .cs-qty-inp:focus{outline:1px solid #388bfd;border-radius:3px;background:var(--sf2);}
+    .cs-col-note{width:110px;min-width:110px;flex-shrink:0;border-right:1px solid var(--bd2);height:36px;display:flex;align-items:center;padding:0 4px;}
+    .cs-note-inp{width:100%;background:transparent;border:none;color:var(--tx2);font-size:11px;font-family:inherit;padding:2px 4px;}
+    .cs-note-inp:focus{outline:1px solid var(--bd);border-radius:3px;color:var(--tx);}
+    .cs-col-del{width:72px;min-width:72px;flex-shrink:0;display:flex;align-items:center;justify-content:center;height:36px;gap:2px;}
+    .cs-del-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
+    .cs-del-btn:hover{background:#3a1a1a;color:#f85149;}
+    .cs-edit-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
+    .cs-edit-btn:hover{background:var(--sf2);color:#388bfd;}
+    .cs-tag-edit-inp{width:118px;background:var(--sf2);border:1px solid #388bfd;border-radius:4px;color:var(--tx);font-size:12px;font-weight:600;padding:2px 6px;font-family:inherit;}
+    .cs-tag-edit-inp:focus{outline:none;}
+
+    /* 작업물량 */
+    .wv-inp{width:100%;background:transparent;border:none;color:var(--tx);font-size:12px;font-family:inherit;padding:3px 6px;text-align:right;}
+    .wv-inp:focus{outline:1px solid #388bfd;border-radius:3px;background:var(--sf2);}
+    .wv-inp.lft{text-align:left;}
+    .wv-num{color:#388bfd;font-weight:600;font-size:12px;}
+    .wv-del-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
+    .wv-del-btn:hover{background:#3a1a1a;color:#f85149;}
+
+    /* Toast */
+    #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--sf);border:1px solid var(--bd);border-radius:20px;padding:8px 18px;font-size:12px;color:var(--tx);opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 12px #0006;}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="hdr">
+    <div class="hdr-title">공정관리 <small>Process Management</small></div>
+    <div class="tab-nav">
+      <button class="tab-btn on" id="tbtn-proc"  onclick="showTab('proc')"><i class="ti ti-chart-bar"></i> 공정률</button>
+      <button class="tab-btn"   id="tbtn-check" onclick="showTab('check')"><i class="ti ti-checklist"></i> 작업물량/수량</button>
+    </div>
+    <div class="flex1"></div>
+
+    <div id="hdr-proc" style="display:flex;gap:6px;align-items:center">
+      <div id="hdr-sub-qty" style="display:flex;gap:6px;align-items:center">
+        <label class="btn"><i class="ti ti-table-import"></i> 계획 CSV<input type="file" class="file-inp" accept=".csv" onchange="handleProcCSV(this)"></label>
+        <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleJSONImport(this)"></label>
+        <button class="btn" onclick="exportProcCSV()"><i class="ti ti-download"></i> 내보내기</button>
+      </div>
+      <div id="hdr-sub-vol" style="display:none;gap:6px;align-items:center">
+        <label class="btn"><i class="ti ti-table-import"></i> 계획 CSV<input type="file" class="file-inp" accept=".csv" onchange="handleVolCSV(this)"></label>
+        <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleVolJSONImport(this)"></label>
+        <button class="btn" onclick="exportVolCSV()"><i class="ti ti-download"></i> 내보내기</button>
+      </div>
+      <div class="hdr-sep"></div>
+      <button class="btn" id="btn-proc-edit" onclick="toggleProcEditMode()"><i class="ti ti-edit"></i> 전체 수정</button>
+    </div>
+    <div id="hdr-check" style="display:none;gap:6px;align-items:center">
+      <label class="btn"><i class="ti ti-table-import"></i> CSV 업로드<input type="file" class="file-inp" accept=".csv" onchange="handleCheckCSV(this)"></label>
+      <button class="btn" onclick="exportCheckCSV()"><i class="ti ti-download"></i> CSV 다운로드</button>
+      <div class="hdr-sep"></div>
+      <button class="btn btn-green" onclick="syncCheckToProc()"><i class="ti ti-refresh"></i> 공정률 반영</button>
+      <div class="hdr-sep"></div>
+      <button class="btn" id="btn-edit-mode" onclick="toggleEditMode()"><i class="ti ti-edit"></i> 전체 수정</button>
+    </div>
+
+    <div class="hdr-sep"></div>
+    <button class="btn btn-primary" onclick="saveData()"><i class="ti ti-device-floppy"></i> 저장</button>
+  </div>
+</header>
+
+<!-- ══ 공정률 ══════════════════════════════════════════════ -->
+<div class="page" id="page-proc">
+  <div style="display:flex;gap:4px;margin-bottom:12px">
+    <button class="tab-btn on" id="sbtn-qty" onclick="showProcSub('qty')"><i class="ti ti-chart-bar"></i> 작업수량</button>
+    <button class="tab-btn"   id="sbtn-vol" onclick="showProcSub('vol')"><i class="ti ti-list-details"></i> 작업물량</button>
+  </div>
+  <div id="proc-sub-qty">
+    <div class="ctrl">
+      <span class="ctrl-lbl">전일 기준일</span>
+      <input type="date" class="date-inp" id="prev-date" onchange="calcAll()">
+      <span class="ctrl-lbl">금일</span>
+      <input type="date" class="date-inp" id="today-date" onchange="calcAll()">
+      <button class="btn btn-sm" onclick="setToday()"><i class="ti ti-calendar-today"></i> 오늘</button>
+      <div class="ctrl-sep"></div>
+      <div class="import-status" id="import-status"><i class="ti ti-circle-x"></i> 일보 미연동</div>
+    </div>
+    <div class="tbl-wrap">
+      <table style="min-width:760px">
+        <thead><tr>
+          <th class="lft" style="width:160px">작업분류</th>
+          <th style="width:52px">단위</th><th style="width:90px">계획수량</th>
+          <th style="width:72px">전일누계</th><th style="width:72px">금일</th><th style="width:72px">누계</th>
+          <th style="width:110px">공정률</th><th style="width:58px">FACTOR</th>
+        </tr></thead>
+        <tbody id="proc-tbody"></tbody>
+        <tfoot id="proc-tfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+  <div id="proc-sub-vol" style="display:none">
+    <div class="ctrl">
+      <span class="ctrl-lbl">전일 기준일</span>
+      <input type="date" class="date-inp" id="vol-prev-date" onchange="calcVolAndRender()">
+      <span class="ctrl-lbl">금일</span>
+      <input type="date" class="date-inp" id="vol-today-date" onchange="calcVolAndRender()">
+      <button class="btn btn-sm" onclick="setVolToday()"><i class="ti ti-calendar-today"></i> 오늘</button>
+      <div class="ctrl-sep"></div>
+      <div class="import-status" id="vol-import-status"><i class="ti ti-circle-x"></i> 일보 미연동</div>
+    </div>
+    <div class="tbl-wrap">
+      <table style="min-width:760px">
+        <thead><tr>
+          <th class="lft" style="width:160px">작업분류</th>
+          <th style="width:52px">단위</th><th style="width:90px">계획수량</th>
+          <th style="width:72px">전일누계</th><th style="width:72px">금일</th><th style="width:72px">누계</th>
+          <th style="width:110px">공정률</th><th style="width:58px">FACTOR</th>
+        </tr></thead>
+        <tbody id="vol-proc-tbody"></tbody>
+        <tfoot id="vol-proc-tfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Check List ══════════════════════════════════════════ -->
+<div class="page hidden" id="page-check">
+  <div style="display:flex;gap:4px;margin-bottom:12px">
+    <button class="tab-btn on" id="ck-sbtn-qty" onclick="switchCheckSub('qty')"><i class="ti ti-chart-bar"></i> 작업수량</button>
+    <button class="tab-btn"   id="ck-sbtn-vol" onclick="switchCheckSub('vol')"><i class="ti ti-list-details"></i> 작업물량</button>
+  </div>
+  <div class="cs-toolbar">
+    <input class="cs-search" id="cs-search" placeholder="TAG 검색 (실시간)..." oninput="applyFilter()">
+    <div class="ctrl-sep"></div>
+    <input class="cs-tag-inp" id="cs-new-tag" placeholder="TAG NO. 입력" onkeydown="if(event.key==='Enter')addTagRow()">
+    <button class="btn btn-primary btn-sm" onclick="addTagRow()"><i class="ti ti-plus"></i> TAG 추가</button>
+  </div>
+  <div class="filter-bar">
+    <span class="ctrl-lbl"><i class="ti ti-filter"></i> 필터</span>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-lbl">공종</span>
+    <select class="cs-select" id="cs-filter-item" onchange="applyFilter()">
+      <option value="">전체</option>
+    </select>
+    <span class="ctrl-lbl">상태</span>
+    <select class="cs-select" id="cs-filter-status" onchange="applyFilter()">
+      <option value="">전체</option>
+      <option value="입력됨">입력됨</option>
+      <option value="미입력">미입력</option>
+    </select>
+    <button class="btn btn-sm" onclick="resetFilter()"><i class="ti ti-x"></i> 초기화</button>
+    <span id="filter-badge" style="font-size:11px;color:var(--tx2);margin-left:4px;"></span>
+  </div>
+  <div class="cs-wrap" id="cs-wrap">
+    <div class="cs-hdr" id="cs-hdr"></div>
+    <div class="cs-virtual" id="cs-virtual">
+      <div id="cs-st"></div>
+      <div id="cs-vis"></div>
+      <div id="cs-sb"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const PROC_ITEMS=[
+  {item:'DCS Panel',unit:'면'},{item:'LCP',unit:'면'},
+  {item:'Junction Box',unit:'EA'},{item:'Field Instrument',unit:'EA'},
+  {item:'Cable Duct',unit:'M'},{item:'Cable Tray',unit:'M'},
+  {item:'Conduit Pipe',unit:'M'},{item:'Air Pipe',unit:'M'},
+  {item:'Hook Up',unit:'M'},{item:'Cable',unit:'M'},
+  {item:'Stanchion',unit:'EA'},{item:'Support',unit:'EA'},
+  {item:'Connection(From)',unit:'Point'},{item:'Connection(To)',unit:'Point'},{item:'Line Check',unit:'Line'},
+  {item:'Loop Test',unit:'Point'},{item:'Leak Test',unit:'Line'},
+  {item:'Instrument Calibration',unit:'EA'},
+  {item:'Steam Tracing Tube',unit:'M'},
+  {item:'Steam Tracing Insulation',unit:'M'},
+  {item:'Scaffolding',unit:'식'},{item:'Others',unit:'식'},
+];
+const ABBR={'DCS Panel':'DCS','LCP':'LCP','Junction Box':'J-Box',
+  'Field Instrument':'F.Inst','Cable Duct':'C.Duct','Cable Tray':'C.Tray',
+  'Conduit Pipe':'Conduit','Air Pipe':'Air','Hook Up':'H/U','Cable':'Cable',
+  'Stanchion':'Stanch','Support':'Supp.','Connection(From)':'Conn.F','Connection(To)':'Conn.T',
+  'Line Check':'L.Chk','Loop Test':'Loop','Leak Test':'Leak',
+  'Instrument Calibration':'Calib','Steam Tracing Tube':'ST.Tube',
+  'Steam Tracing Insulation':'ST.Ins','Scaffolding':'Scaff.','Others':'Etc.'};
+const COLORS=['#2d5a8e','#3B6D11','#BA7517','#A32D2D','#185FA5','#854F0B',
+  '#6B4C9A','#1a6e6e','#c06800','#005f5f','#8B0000','#556B2F',
+  '#4B0082','#2F4F4F','#8B4513','#5F9EA0','#2d5a8e','#3B6D11',
+  '#BA7517','#A32D2D','#185FA5'];
+
+const W_ITEM=88, W_NOTE=110, W_DEL=72;
+const ROW_H=36, BUFFER=20;
+
+function makeProcData(saved){
+  return PROC_ITEMS.map(p=>{
+    const s=(saved||[]).find(d=>d.item===p.item);
+    return{item:p.item,unit:s?.unit??p.unit,plan:s?.plan??0,planLocked:s?.planLocked??false,
+      factor:s?.factor??1,prev:s?.prev??0,prevLocked:s?.prevLocked??false,
+      today:s?.today??0,todayLocked:s?.todayLocked??false};
+  });
+}
+
+let procData=[], procVolData=[], importedReports=[], lastImport=null;
+let importedVolReports=[], lastVolImport=null;
+
+let db;
+// checkQtyData: 작업수량 check list  checkVolData: 작업물량 check list
+let checkQtyData=[], checkVolData=[];
+let checkData=[];   // 현재 활성 데이터셋을 참조
+let activeCheckSub='qty';
+let filteredCheck=[];
+let vsStart=0, vsEnd=0, scrollRaf=null;
+let editingRi=-1, skipSave=false, editMode=false, procEditMode=false;
+// workData: [{work, unit, plan, prev, today, note}]
+let workData=[];
+
+// ── IndexedDB ─────────────────────────────────────────────
+function openDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open('ProcMgmtDB',3);
+    req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('kv'))d.createObjectStore('kv');};
+    req.onsuccess=e=>res(e.target.result);
+    req.onerror=e=>rej(e);
+  });
+}
+function dbGet(k){return new Promise((res,rej)=>{const req=db.transaction('kv','readonly').objectStore('kv').get(k);req.onsuccess=e=>res(e.target.result);req.onerror=e=>rej(e);});}
+function dbSet(k,v){return new Promise((res,rej)=>{const req=db.transaction('kv','readwrite').objectStore('kv').put(v,k);req.onsuccess=()=>res();req.onerror=e=>rej(e);});}
+
+// ── Init ──────────────────────────────────────────────────
+async function initApp(){
+  db=await openDB();
+  const[sp,spv,sr,sli,svr,svli,sprev,stod,svprev,svtod,sc,sc1,scv]=await Promise.all([
+    dbGet('procData1'),dbGet('procVolData'),dbGet('reports1'),dbGet('lastImport1'),
+    dbGet('volReports'),dbGet('lastVolImport'),
+    dbGet('prevDate'),dbGet('todayDate'),dbGet('volPrevDate'),dbGet('volTodayDate'),
+    dbGet('checkData'),dbGet('checkData1'),dbGet('checkVolData'),
+  ]);
+  procData=makeProcData(sp);
+  procVolData=makeProcData(spv);
+  importedReports=sr||[];
+  lastImport=sli||null;
+  importedVolReports=svr||[];
+  lastVolImport=svli||null;
+
+  // migrate old 'checkData' key → checkData1
+  const rawQty=sc1!==undefined?sc1:(sc||[]);
+  checkQtyData=rawQty.map(r=>({tagNo:r.tagNo||'',qty:r.qty||{},note:r.note||''}));
+  checkVolData=(scv||[]).map(r=>({tagNo:r.tagNo||'',qty:r.qty||{},note:r.note||''}));
+
+  const today=new Date().toISOString().slice(0,10);
+  const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  document.getElementById('prev-date').value=sprev||yest;
+  document.getElementById('today-date').value=stod||today;
+  document.getElementById('vol-prev-date').value=svprev||yest;
+  document.getElementById('vol-today-date').value=svtod||today;
+
+  updateImportStatus();
+  updateVolImportStatus();
+  calcAll();
+  checkData=checkQtyData;
+  initCheckSheet();
+}
+
+// ── Save ──────────────────────────────────────────────────
+async function saveData(){
+  await Promise.all([
+    dbSet('procData1',procData),dbSet('procVolData',procVolData),
+    dbSet('reports1',importedReports),dbSet('lastImport1',lastImport),
+    dbSet('volReports',importedVolReports),dbSet('lastVolImport',lastVolImport),
+    dbSet('prevDate',document.getElementById('prev-date').value),
+    dbSet('todayDate',document.getElementById('today-date').value),
+    dbSet('volPrevDate',document.getElementById('vol-prev-date').value),
+    dbSet('volTodayDate',document.getElementById('vol-today-date').value),
+    dbSet('checkData1',checkQtyData),dbSet('checkVolData',checkVolData),
+  ]);
+  if(editMode) toggleEditMode();
+  showToast('✓ 저장 완료');
+}
+
+// ── Tab ───────────────────────────────────────────────────
+let activeProcSub='qty';
+function showProcSub(sub){
+  activeProcSub=sub;
+  document.getElementById('proc-sub-qty').style.display=sub==='qty'?'block':'none';
+  document.getElementById('proc-sub-vol').style.display=sub==='vol'?'block':'none';
+  ['qty','vol'].forEach(s=>document.getElementById('sbtn-'+s).classList.toggle('on',s===sub));
+  document.getElementById('hdr-sub-qty').style.display=sub==='qty'?'flex':'none';
+  document.getElementById('hdr-sub-vol').style.display=sub==='vol'?'flex':'none';
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function showTab(tab){
+  if(tab!=='check'&&editMode) toggleEditMode();
+  if(tab!=='proc'&&procEditMode) toggleProcEditMode();
+  document.getElementById('page-proc').classList.toggle('hidden',tab!=='proc');
+  document.getElementById('page-check').classList.toggle('hidden',tab!=='check');
+  ['proc','check'].forEach(t=>document.getElementById('tbtn-'+t).classList.toggle('on',t===tab));
+  document.getElementById('hdr-proc').style.display=tab==='proc'?'flex':'none';
+  document.getElementById('hdr-check').style.display=tab==='check'?'flex':'none';
+  if(tab==='check') setWrapHeight();
+  window.scrollTo({top:0,behavior:'instant'});
+}
+
+// ── Process Rate ──────────────────────────────────────────
+function calcFromReports(){
+  const pd=document.getElementById('prev-date').value;
+  const td=document.getElementById('today-date').value;
+  procData.forEach(d=>{if(!d.prevLocked)d.prev=0;if(!d.todayLocked)d.today=0;});
+  importedReports.forEach(r=>{
+    const rd=r.date||'';
+    (r.works||[]).forEach(w=>{
+      const p=procData.find(d=>d.item===w.item);const act=parseFloat(w.act)||0;
+      if(!p||!act)return;
+      if(pd&&rd<=pd){if(!p.prevLocked)p.prev+=act;}
+      else if(rd<=td){if(!p.todayLocked)p.today+=act;}
+    });
+  });
+}
+function calcVolFromReports(){
+  const pd=document.getElementById('vol-prev-date').value;
+  const td=document.getElementById('vol-today-date').value;
+  procVolData.forEach(d=>{if(!d.prevLocked)d.prev=0;if(!d.todayLocked)d.today=0;});
+  importedVolReports.forEach(r=>{
+    const rd=r.date||'';
+    (r.works||[]).forEach(w=>{
+      const p=procVolData.find(d=>d.item===w.item);const act=parseFloat(w.act)||0;
+      if(!p||!act)return;
+      if(pd&&rd<=pd){if(!p.prevLocked)p.prev+=act;}
+      else if(rd<=td){if(!p.todayLocked)p.today+=act;}
+    });
+  });
+}
+function calcAndRender(){calcFromReports();renderTable();}
+function calcVolAndRender(){calcVolFromReports();renderVolTable();}
+function calcAll(){calcAndRender();calcVolAndRender();if(checkQtyData.length||checkVolData.length)syncCheckToProc(true);}
+
+function updateVolImportStatus(){
+  const el=document.getElementById('vol-import-status');
+  el.innerHTML=lastVolImport
+    ?`<i class="ti ti-circle-check" style="color:#3B6D11"></i> 일보 ${importedVolReports.length}건 연동 <small style="color:var(--tx2)">${lastVolImport}</small>`
+    :`<i class="ti ti-circle-x" style="color:var(--tx2)"></i> 일보 미연동`;
+}
+function setVolToday(){
+  document.getElementById('vol-today-date').value=today();
+  document.getElementById('vol-prev-date').value=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  calcVolAndRender();
+}
+function handleVolJSONImport(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const bk=JSON.parse(e.target.result);let reports=[];
+      if(bk?.data?.['plant14:reports'])reports=bk.data['plant14:reports'];
+      else if(Array.isArray(bk))reports=bk;
+      else if(Array.isArray(bk.reports))reports=bk.reports;
+      if(!reports.length){showToast('⚠️ 일보 데이터 없음');return;}
+      procVolData.forEach(d=>{d.prevLocked=false;d.todayLocked=false;});
+      importedVolReports=reports;
+      lastVolImport=new Date().toLocaleString('ko-KR');
+      updateVolImportStatus();calcVolAndRender();
+      showToast(`✓ 일보 ${reports.length}건 가져오기 완료`);
+    }catch(err){showToast('⚠️ 파일 오류: '+err.message);}
+  };
+  r.readAsText(f,'UTF-8');input.value='';
+}
+
+function renderTable(){
+  document.getElementById('proc-tbody').innerHTML=procData.map((d,i)=>{
+    const cum=d.prev+d.today;
+    const raw=d.plan>0?Math.min(+(cum/d.plan*100).toFixed(1),100):0;
+    const p1=+(raw*(d.factor??1)).toFixed(1);
+    const col=COLORS[i%COLORS.length],c1=pctColor(p1);
+    return`<tr>
+      <td class="lft">${d.item}</td><td class="unit">${d.unit}</td>
+      <td><input type="number" min="0" class="plan-inp${d.planLocked?' locked':''}" value="${d.plan||''}" placeholder="입력"
+        ${d.planLocked?'readonly':`onchange="updatePlan(${i},this)"`}>
+        ${d.planLocked?`<i class="ti ti-lock lock-icon" title="잠금 해제" onclick="unlockPlan(${i})"></i>`:''}</td>
+      ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.prev||''}" placeholder="0" onchange="setProcPrev(${i},this)"></td>`:`<td>${d.prev>0?d.prev:''}</td>`}
+      ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.today||''}" placeholder="0" onchange="setProcToday(${i},this)"></td>`:`<td>${d.today>0?d.today:''}</td>`}
+      <td style="font-weight:600;color:${c1}">${cum>0?cum:''}</td>
+      <td>${d.plan>0?`<div class="pbar-wrap"><div class="pbar"><div class="pbar-fill" style="width:${Math.min(p1,100)}%;background:${col}"></div></div><span class="pct-val" style="color:${c1}">${p1}%</span></div>`:'<span style="color:var(--tx2)">–</span>'}</td>
+      <td><input type="number" min="0" max="9.99" step="0.01" class="factor-inp" value="${d.factor??1}" onchange="updateFactor(${i},this)"></td>
+    </tr>`;
+  }).join('');
+  renderFooter();
+}
+function renderFooter(){
+  const tp=procData.reduce((a,d)=>a+(d.plan||0),0);
+  const tprev=procData.reduce((a,d)=>a+d.prev,0);
+  const ttod=procData.reduce((a,d)=>a+d.today,0);
+  const tcum=tprev+ttod;
+  const valid=procData.filter(d=>d.plan>0);
+  const adj=valid.length?+(valid.reduce((a,d)=>{const c=d.prev+d.today;return a+Math.min(+(c/d.plan*100).toFixed(1),100)*(d.factor??1);},0)/valid.length).toFixed(1):0;
+  document.getElementById('proc-tfoot').innerHTML=`<tr>
+    <td class="lft" colspan="2">합 계</td>
+    <td>${tp>0?tp.toLocaleString():''}</td>
+    <td>${tprev>0?tprev.toLocaleString():''}</td>
+    <td>${ttod>0?ttod.toLocaleString():''}</td>
+    <td style="color:#388bfd">${tcum>0?tcum.toLocaleString():''}</td>
+    <td style="color:${pctColor(adj)};font-size:13px">${tp>0?adj+'%':''}</td><td>–</td>
+  </tr>`;
+}
+function updatePlan(i,inp){procData[i].plan=parseFloat(inp.value)||0;if(procData[i].plan>0){procData[i].planLocked=true;showToast('🔒 계획수량 잠금');}calcAndRender();}
+function unlockPlan(i){if(!confirm('잠금 해제?'))return;procData[i].planLocked=false;renderTable();}
+function updateFactor(i,inp){procData[i].factor=parseFloat(inp.value)??1;renderTable();}
+function setProcPrev(i,inp){procData[i].prev=parseFloat(inp.value)||0;procData[i].prevLocked=true;renderTable();}
+function setProcToday(i,inp){procData[i].today=parseFloat(inp.value)||0;procData[i].todayLocked=true;renderTable();}
+function toggleProcEditMode(){
+  procEditMode=!procEditMode;
+  const btn=document.getElementById('btn-proc-edit');
+  if(procEditMode){btn.innerHTML='<i class="ti ti-pencil-off"></i> 수정 중';btn.classList.add('btn-primary');}
+  else{btn.innerHTML='<i class="ti ti-edit"></i> 전체 수정';btn.classList.remove('btn-primary');}
+  renderTable();renderVolTable();
+}
+
+// ── 작업물량 공정률 렌더 ───────────────────────────────────
+function renderVolTable(){
+  document.getElementById('vol-proc-tbody').innerHTML=procVolData.map((d,i)=>{
+    const cum=d.prev+d.today;
+    const raw=d.plan>0?Math.min(+(cum/d.plan*100).toFixed(1),100):0;
+    const p1=+(raw*(d.factor??1)).toFixed(1);
+    const col=COLORS[i%COLORS.length],c1=pctColor(p1);
+    return`<tr>
+      <td class="lft">${d.item}</td><td class="unit">${d.unit}</td>
+      <td><input type="number" min="0" class="plan-inp${d.planLocked?' locked':''}" value="${d.plan||''}" placeholder="입력"
+        ${d.planLocked?'readonly':`onchange="updateVolPlan(${i},this)"`}>
+        ${d.planLocked?`<i class="ti ti-lock lock-icon" title="잠금 해제" onclick="unlockVolPlan(${i})"></i>`:''}</td>
+      ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.prev||''}" placeholder="0" onchange="setVolPrev(${i},this)"></td>`:`<td>${d.prev>0?d.prev:''}</td>`}
+      ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.today||''}" placeholder="0" onchange="setVolProcToday(${i},this)"></td>`:`<td>${d.today>0?d.today:''}</td>`}
+      <td style="font-weight:600;color:${c1}">${cum>0?cum:''}</td>
+      <td>${d.plan>0?`<div class="pbar-wrap"><div class="pbar"><div class="pbar-fill" style="width:${Math.min(p1,100)}%;background:${col}"></div></div><span class="pct-val" style="color:${c1}">${p1}%</span></div>`:'<span style="color:var(--tx2)">–</span>'}</td>
+      <td><input type="number" min="0" max="9.99" step="0.01" class="factor-inp" value="${d.factor??1}" onchange="updateVolFactor(${i},this)"></td>
+    </tr>`;
+  }).join('');
+  renderVolFooter();
+}
+function renderVolFooter(){
+  const tp=procVolData.reduce((a,d)=>a+(d.plan||0),0);
+  const tprev=procVolData.reduce((a,d)=>a+d.prev,0);
+  const ttod=procVolData.reduce((a,d)=>a+d.today,0);
+  const tcum=tprev+ttod;
+  const valid=procVolData.filter(d=>d.plan>0);
+  const adj=valid.length?+(valid.reduce((a,d)=>{const c=d.prev+d.today;return a+Math.min(+(c/d.plan*100).toFixed(1),100)*(d.factor??1);},0)/valid.length).toFixed(1):0;
+  document.getElementById('vol-proc-tfoot').innerHTML=`<tr>
+    <td class="lft" colspan="2">합 계</td>
+    <td>${tp>0?tp.toLocaleString():''}</td>
+    <td>${tprev>0?tprev.toLocaleString():''}</td>
+    <td>${ttod>0?ttod.toLocaleString():''}</td>
+    <td style="color:#388bfd">${tcum>0?tcum.toLocaleString():''}</td>
+    <td style="color:${pctColor(adj)};font-size:13px">${tp>0?adj+'%':''}</td><td>–</td>
+  </tr>`;
+}
+function updateVolPlan(i,inp){procVolData[i].plan=parseFloat(inp.value)||0;if(procVolData[i].plan>0){procVolData[i].planLocked=true;showToast('🔒 계획수량 잠금');}renderVolTable();}
+function unlockVolPlan(i){if(!confirm('잠금 해제?'))return;procVolData[i].planLocked=false;renderVolTable();}
+function updateVolFactor(i,inp){procVolData[i].factor=parseFloat(inp.value)??1;renderVolTable();}
+function setVolPrev(i,inp){procVolData[i].prev=parseFloat(inp.value)||0;procVolData[i].prevLocked=true;renderVolTable();}
+function setVolProcToday(i,inp){procVolData[i].today=parseFloat(inp.value)||0;procVolData[i].todayLocked=true;renderVolTable();}
+
+// ── Proc CSV / JSON ────────────────────────────────────────
+function handleProcCSV(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());let count=0;
+    lines.forEach((line,i)=>{if(i===0)return;
+      const cols=line.split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+      const pd=procData.find(d=>d.item===cols[0]);const plan=parseFloat(cols[2])||0;
+      if(pd&&plan>0){pd.plan=plan;pd.planLocked=true;if(cols[1])pd.unit=cols[1];count++;}
+    });
+    if(count>0){calcAndRender();showToast(`✓ ${count}개 계획수량 반영`);}
+    else showToast('⚠️ 유효한 데이터 없음');
+  };
+  r.readAsText(f,'UTF-8');input.value='';
+}
+function handleJSONImport(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const bk=JSON.parse(e.target.result);let reports=[];
+      if(bk?.data?.['plant14:reports'])reports=bk.data['plant14:reports'];
+      else if(Array.isArray(bk))reports=bk;
+      else if(Array.isArray(bk.reports))reports=bk.reports;
+      if(!reports.length){showToast('⚠️ 일보 데이터 없음');return;}
+      procData.forEach(d=>{d.prevLocked=false;d.todayLocked=false;});
+      importedReports=reports;
+      lastImport=new Date().toLocaleString('ko-KR');
+      updateImportStatus();calcAndRender();
+      showToast(`✓ 일보 ${reports.length}건 가져오기 완료`);
+    }catch(err){showToast('⚠️ 파일 오류: '+err.message);}
+  };
+  r.readAsText(f,'UTF-8');input.value='';
+}
+function exportProcCSV(){
+  const hdr='작업분류,단위,계획수량,전일누계,금일,누계,공정률(%),FACTOR\n';
+  const rows=procData.map(d=>{
+    const cum=d.prev+d.today;
+    const p1=d.plan>0?Math.min(+(cum/d.plan*100).toFixed(1),100):0;
+    const p2=+(p1*(d.factor??1)).toFixed(1);
+    return[d.item,d.unit,d.plan||'',d.prev||'',d.today||'',cum||'',d.plan>0?p2:'',d.factor??1].map(v=>`"${v}"`).join(',');
+  }).join('\n');
+  dl(`공정관리_작업수량_${today()}.csv`,'﻿'+hdr+rows);
+  showToast('✓ 내보내기 완료');
+}
+function handleVolCSV(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());let count=0;
+    lines.forEach((line,i)=>{if(i===0)return;
+      const cols=line.split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+      const pd=procVolData.find(d=>d.item===cols[0]);const plan=parseFloat(cols[2])||0;
+      if(pd&&plan>0){pd.plan=plan;pd.planLocked=true;if(cols[1])pd.unit=cols[1];count++;}
+    });
+    if(count>0){renderVolTable();renderVolChart();showToast(`✓ ${count}개 계획수량 반영`);}
+    else showToast('⚠️ 유효한 데이터 없음');
+  };
+  r.readAsText(f,'UTF-8');input.value='';
+}
+function exportVolCSV(){
+  const hdr='작업분류,단위,계획수량,전일누계,금일,누계,공정률(%),FACTOR\n';
+  const rows=procVolData.map(d=>{
+    const cum=d.prev+d.today;
+    const p1=d.plan>0?Math.min(+(cum/d.plan*100).toFixed(1),100):0;
+    const p2=+(p1*(d.factor??1)).toFixed(1);
+    return[d.item,d.unit,d.plan||'',d.prev||'',d.today||'',cum||'',d.plan>0?p2:'',d.factor??1].map(v=>`"${v}"`).join(',');
+  }).join('\n');
+  dl(`공정관리_작업물량_${today()}.csv`,'﻿'+hdr+rows);
+  showToast('✓ 내보내기 완료');
+}
+
+// ── Check List ─────────────────────────────────────────────
+function setWrapHeight(){
+  document.getElementById('cs-wrap').style.height=Math.max(300,window.innerHeight-320)+'px';
+}
+window.addEventListener('resize',()=>{if(!document.getElementById('page-check').classList.contains('hidden'))setWrapHeight();});
+
+function getCheckCols(){ return PROC_ITEMS; }
+
+function switchCheckSub(sub){
+  activeCheckSub=sub;
+  checkData=sub==='qty'?checkQtyData:checkVolData;
+  document.getElementById('ck-sbtn-qty').classList.toggle('on',sub==='qty');
+  document.getElementById('ck-sbtn-vol').classList.toggle('on',sub==='vol');
+  rebuildFilterSelect();
+  buildCsHeader();
+  applyFilter();
+}
+
+function rebuildFilterSelect(){
+  const sel=document.getElementById('cs-filter-item');
+  sel.innerHTML='<option value="">전체</option>';
+  getCheckCols().forEach(p=>{
+    const opt=document.createElement('option');
+    opt.value=p.item;
+    opt.textContent=`${ABBR[p.item]||p.item} (${p.unit})`;
+    sel.appendChild(opt);
+  });
+}
+
+function initCheckSheet(){
+  rebuildFilterSelect();
+  buildCsHeader();applyFilter();
+  const wrap=document.getElementById('cs-wrap');
+  wrap.addEventListener('scroll',()=>{
+    if(scrollRaf)cancelAnimationFrame(scrollRaf);
+    scrollRaf=requestAnimationFrame(()=>vsRender(wrap));
+  });
+}
+
+function buildCsHeader(){
+  const cols=getCheckCols();
+  document.getElementById('cs-hdr').innerHTML=
+    `<div class="cs-hdr-cell cs-col-tag lft">TAG NO.</div>`+
+    cols.map(p=>`<div class="cs-hdr-cell" style="width:${W_ITEM}px;min-width:${W_ITEM}px" title="${p.item} (${p.unit})">${ABBR[p.item]||p.item}</div>`).join('')+
+    `<div class="cs-hdr-cell" style="width:${W_NOTE}px;min-width:${W_NOTE}px">비고</div>`+
+    `<div class="cs-hdr-cell" style="width:${W_DEL}px;min-width:${W_DEL}px"></div>`;
+}
+
+function applyFilter(){
+  const q=(document.getElementById('cs-search')?.value||'').toLowerCase();
+  const fi=document.getElementById('cs-filter-item')?.value||'';
+  const fs=document.getElementById('cs-filter-status')?.value||'';
+  filteredCheck=checkData.filter(r=>{
+    if(q&&!r.tagNo.toLowerCase().includes(q))return false;
+    if(!fi||!fs)return true;
+    const filled=(parseFloat((r.qty||{})[fi])||0)>0;
+    if(fs==='입력됨')return filled;
+    if(fs==='미입력')return !filled;
+    return true;
+  });
+  const badge=document.getElementById('filter-badge');
+  badge.textContent=(fi||fs)?`${filteredCheck.length.toLocaleString()}개 표시`:'';
+  const wrap=document.getElementById('cs-wrap');
+  wrap.scrollTop=0;vsRender(wrap);
+}
+function resetFilter(){
+  document.getElementById('cs-filter-item').value='';
+  document.getElementById('cs-filter-status').value='';
+  applyFilter();
+}
+
+function vsRender(wrap){
+  const scrollTop=wrap.scrollTop,clientH=wrap.clientHeight||500;
+  const total=filteredCheck.length;
+  const start=Math.max(0,Math.floor(scrollTop/ROW_H)-BUFFER);
+  const end=Math.min(total,Math.ceil((scrollTop+clientH)/ROW_H)+BUFFER);
+  vsStart=start;vsEnd=end;
+  document.getElementById('cs-st').style.height=(start*ROW_H)+'px';
+  document.getElementById('cs-sb').style.height=((total-end)*ROW_H)+'px';
+  document.getElementById('cs-vis').innerHTML=renderRows(start,end);
+}
+
+function renderRows(start,end){
+  const cols=getCheckCols();
+  return filteredCheck.slice(start,end).map(row=>{
+    const ri=checkData.indexOf(row);
+    const tagCell=ri===editingRi
+      ?`<div class="cs-col-tag"><input class="cs-tag-edit-inp" value="${escHtml(row.tagNo)}" onblur="saveEditTag(${ri},this.value)" onkeydown="if(event.key==='Enter')this.blur();else if(event.key==='Escape')cancelEditTag()"></div>`
+      :`<div class="cs-col-tag" title="${row.tagNo}">${row.tagNo}</div>`;
+    return`<div class="cs-row">
+      ${tagCell}
+      ${cols.map(p=>renderCell(ri,p.item)).join('')}
+      <div class="cs-col-note"><input class="cs-note-inp" value="${escHtml(row.note||'')}" placeholder="비고" onchange="checkData[${ri}].note=this.value"></div>
+      <div class="cs-col-del">
+        <button class="cs-edit-btn" onclick="startEditTag(${ri})" title="수정"><i class="ti ti-pencil"></i></button>
+        <button class="cs-del-btn" onclick="deleteTagRow(${ri})" title="삭제"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCell(ri,item){
+  const isQty=activeCheckSub==='qty';
+  const rawVal=(checkData[ri].qty||{})[item];
+  const S=`style="width:${W_ITEM}px;min-width:${W_ITEM}px"`;
+  if(isQty){
+    const dateStr=parseExcelDate(String(rawVal||'').trim());
+    const hasVal=dateStr.length>0;
+    if(!editMode){
+      if(hasVal)return`<div class="cs-col-item has-val" ${S}><span class="cs-qty-txt" style="font-size:11px">${dateStr.slice(0,10)}</span></div>`;
+      return`<div class="cs-col-item" ${S}></div>`;
+    }
+    return`<div class="cs-col-item${hasVal?' has-val':''}" ${S}>
+      <input type="date" class="cs-qty-inp" style="width:80px;font-size:10px" value="${dateStr}"
+        onchange="setQty(${ri},'${item}',this.value)" onblur="setQty(${ri},'${item}',this.value)">
+    </div>`;
+  }
+  const val=parseFloat(rawVal)||0;
+  return`<div class="cs-col-item${val>0?' has-val':''}" ${S}>
+    <input type="number" min="0" class="cs-qty-inp" value="${val||''}" placeholder="0"
+      onchange="setQty(${ri},'${item}',this.value)" onblur="setQty(${ri},'${item}',this.value)">
+  </div>`;
+}
+
+function setQty(ri,item,val){
+  if(!checkData[ri].qty)checkData[ri].qty={};
+  checkData[ri].qty[item]=activeCheckSub==='qty'?(parseExcelDate(val)||''):(parseFloat(val)||0);
+  const wrap=document.getElementById('cs-wrap');
+  vsRender(wrap);
+  syncCheckToProc(true);
+}
+
+function addTagRow(){
+  const inp=document.getElementById('cs-new-tag');
+  const tag=inp.value.trim().toUpperCase();
+  if(!tag){showToast('TAG NO.를 입력하세요');return;}
+  if(checkData.find(r=>r.tagNo===tag)){showToast('이미 존재하는 TAG입니다');return;}
+  checkData.push({tagNo:tag,qty:{},note:''});
+  inp.value='';
+  applyFilter();
+  const wrap=document.getElementById('cs-wrap');
+  wrap.scrollTop=Math.max(0,(filteredCheck.length-1)*ROW_H);
+  vsRender(wrap);
+  showToast(`✓ ${tag} 추가`);
+}
+
+function deleteTagRow(ri){
+  if(!confirm(`[${checkData[ri].tagNo}] 삭제하시겠습니까?`))return;
+  checkData.splice(ri,1);applyFilter();syncCheckToProc(true);
+}
+
+function startEditTag(ri){
+  editingRi=ri;vsRender(document.getElementById('cs-wrap'));
+  setTimeout(()=>{const inp=document.querySelector('.cs-tag-edit-inp');if(inp)inp.focus();},0);
+}
+function saveEditTag(ri,val){
+  if(skipSave)return;
+  editingRi=-1;
+  const tag=val.trim().toUpperCase();
+  if(!tag||tag===checkData[ri].tagNo){applyFilter();return;}
+  if(checkData.some((r,i)=>r.tagNo===tag&&i!==ri)){showToast('이미 존재하는 TAG입니다');applyFilter();return;}
+  checkData[ri].tagNo=tag;applyFilter();showToast(`✓ ${tag} 수정 완료`);
+}
+function cancelEditTag(){
+  skipSave=true;editingRi=-1;vsRender(document.getElementById('cs-wrap'));skipSave=false;
+}
+function toggleEditMode(){
+  editMode=!editMode;
+  const btn=document.getElementById('btn-edit-mode');
+  if(editMode){btn.innerHTML='<i class="ti ti-pencil-off"></i> 수정 중';btn.classList.add('btn-primary');}
+  else{btn.innerHTML='<i class="ti ti-edit"></i> 전체 수정';btn.classList.remove('btn-primary');}
+  vsRender(document.getElementById('cs-wrap'));
+}
+
+// Check List CSV
+function handleCheckCSV(input){
+  const f=input.files[0];if(!f)return;
+  showToast('업로드 처리 중...');
+  const r=new FileReader();
+  r.onload=e=>{
+    const cols_def=getCheckCols();
+    const lines=e.target.result.split('\n').filter(l=>l.trim());
+    if(lines.length<2){showToast('⚠️ 데이터 없음');return;}
+    const hdrs=lines[0].split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+    let count=0;const CHUNK=500;let i=1;
+    function processChunk(){
+      const end=Math.min(i+CHUNK,lines.length);
+      for(;i<end;i++){
+        const cols=lines[i].split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+        const tag=cols[0];if(!tag)continue;
+        let row=checkData.find(r=>r.tagNo===tag);
+        if(!row){row={tagNo:tag,qty:{},note:''};checkData.push(row);}
+        hdrs.slice(1).forEach((h,hi)=>{
+          const pItem=cols_def.find(p=>p.item===h||(ABBR[p.item]&&ABBR[p.item]===h));
+          const v=cols[hi+1]??'';
+          if(pItem){
+            if(activeCheckSub==='qty') row.qty[pItem.item]=parseExcelDate(v.trim());
+            else row.qty[pItem.item]=parseFloat(String(v).replace(/,/g,'').trim())||0;
+          }else if(h==='비고'&&v)row.note=v;
+        });
+        count++;
+      }
+      if(i<lines.length){setTimeout(processChunk,0);}
+      else{applyFilter();syncCheckToProc();saveData();showToast(`✓ ${count.toLocaleString()}개 TAG 업로드 완료 (공정률 자동 반영)`);}
+    }
+    processChunk();
+  };
+  r.readAsText(f,'UTF-8');input.value='';
+}
+function exportCheckCSV(){
+  showToast('CSV 생성 중...');
+  setTimeout(()=>{
+    const cols=getCheckCols();
+    const label=activeCheckSub==='qty'?'작업수량':'작업물량';
+    const hdr=['TAG NO.',...cols.map(p=>p.item),'비고'].map(v=>`"${v}"`).join(',');
+    const rows=checkData.map(r=>[r.tagNo,...cols.map(p=>(r.qty||{})[p.item]||0),r.note||''].map(v=>`"${v}"`).join(',')).join('\n');
+    dl(`check_${label}_${today()}.csv`,'﻿'+hdr+'\n'+rows);
+    showToast('✓ CSV 다운로드 완료');
+  },50);
+}
+
+// Check → Proc sync
+function syncCheckToProc(silent=false){
+  const todayDate=document.getElementById('today-date').value;
+  const prevDate=todayDate?new Date(new Date(todayDate).getTime()-86400000).toISOString().slice(0,10):'';
+  procData.forEach(d=>{
+    if(!d.planLocked)d.plan=checkQtyData.length||0;
+    if(!d.prevLocked)d.prev=checkQtyData.filter(r=>{const v=parseExcelDate(String((r.qty||{})[d.item]||'').trim());return v&&prevDate&&v<=prevDate;}).length;
+    if(!d.todayLocked)d.today=checkQtyData.filter(r=>{const v=parseExcelDate(String((r.qty||{})[d.item]||'').trim());return v&&v===todayDate;}).length;
+  });
+  procVolData.forEach(d=>{
+    const total=checkVolData.reduce((a,r)=>a+(parseFloat((r.qty||{})[d.item])||0),0);
+    if(!d.planLocked)d.plan=total;
+    d.today=Math.max(0,total-d.prev);
+  });
+  renderTable();
+  renderVolTable();
+  if(!silent)showToast('✓ 작업물량·작업수량 → 공정률 각각 반영 완료');
+}
+
+// ── 작업물량 ───────────────────────────────────────────────
+function renderWorkTable(){
+  document.getElementById('work-tbody').innerHTML=workData.map((w,i)=>{
+    const cum=(w.prev||0)+(w.today||0);
+    const pct=w.plan>0?Math.min(+(cum/w.plan*100).toFixed(1),100):0;
+    const c=pctColor(pct);
+    return`<tr>
+      <td style="color:var(--tx2)">${i+1}</td>
+      <td class="lft"><input class="wv-inp lft" value="${escHtml(w.work||'')}" placeholder="작업내용" onchange="workData[${i}].work=this.value"></td>
+      <td><input class="wv-inp" style="width:54px;text-align:center" value="${escHtml(w.unit||'')}" placeholder="단위" onchange="workData[${i}].unit=this.value"></td>
+      <td><input type="number" min="0" class="wv-inp" value="${w.plan||''}" placeholder="0" onchange="workData[${i}].plan=parseFloat(this.value)||0;renderWorkTable()"></td>
+      <td><input type="number" min="0" class="wv-inp" value="${w.prev||''}" placeholder="0" onchange="workData[${i}].prev=parseFloat(this.value)||0;renderWorkTable()"></td>
+      <td><input type="number" min="0" class="wv-inp" value="${w.today||''}" placeholder="0" onchange="workData[${i}].today=parseFloat(this.value)||0;renderWorkTable()"></td>
+      <td class="wv-num">${cum>0?cum.toLocaleString():''}</td>
+      <td>${w.plan>0?`<div class="pbar-wrap"><div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${COLORS[i%COLORS.length]}"></div></div><span class="pct-val" style="color:${c}">${pct}%</span></div>`:'<span style="color:var(--tx2)">–</span>'}</td>
+      <td><input class="wv-inp lft" value="${escHtml(w.note||'')}" placeholder="비고" onchange="workData[${i}].note=this.value"></td>
+      <td><button class="wv-del-btn" onclick="deleteWorkRow(${i})" title="삭제"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+  renderWorkFooter();
+}
+function renderWorkFooter(){
+  const tp=workData.reduce((a,w)=>a+(w.plan||0),0);
+  const tprev=workData.reduce((a,w)=>a+(w.prev||0),0);
+  const ttod=workData.reduce((a,w)=>a+(w.today||0),0);
+  const tcum=tprev+ttod;
+  const pct=tp>0?Math.min(+(tcum/tp*100).toFixed(1),100):0;
+  document.getElementById('work-tfoot').innerHTML=`<tr>
+    <td colspan="3" class="lft" style="text-align:left">합 계</td>
+    <td>${tp>0?tp.toLocaleString():''}</td>
+    <td>${tprev>0?tprev.toLocaleString():''}</td>
+    <td>${ttod>0?ttod.toLocaleString():''}</td>
+    <td style="color:#388bfd">${tcum>0?tcum.toLocaleString():''}</td>
+    <td style="color:${pctColor(pct)}">${tp>0?pct+'%':''}</td>
+    <td colspan="2"></td>
+  </tr>`;
+}
+function addWorkRow(){
+  workData.push({work:'',unit:'',plan:0,prev:0,today:0,note:''});
+  renderWorkTable();
+}
+function deleteWorkRow(i){
+  if(!confirm('항목을 삭제하시겠습니까?'))return;
+  workData.splice(i,1);renderWorkTable();
+}
+function syncWorkToProc(){
+  workData.forEach(w=>{
+    const pd=procData.find(d=>d.item===w.work);
+    if(!pd)return;
+    if(!pd.planLocked)pd.plan=w.plan||0;
+    pd.prev=w.prev||0;
+    pd.today=w.today||0;
+  });
+  renderTable();renderChart();
+  showToast('✓ 작업물량 → 공정률 동기화 완료');
+}
+function handleWorkCSV(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());
+    if(lines.length<2){showToast('⚠️ 데이터 없음');return;}
+    let count=0;
+    lines.forEach((line,i)=>{
+      if(i===0)return;
+      const cols=line.split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+      if(!cols[0])return;
+      workData.push({work:cols[0],unit:cols[1]||'',plan:parseFloat(cols[2])||0,prev:parseFloat(cols[3])||0,today:parseFloat(cols[4])||0,note:cols[5]||''});
+      count++;
+    });
+    renderWorkTable();showToast(`✓ ${count}개 항목 업로드 완료`);
+  };
+  r.readAsText(f,'UTF-8');input.value='';
+}
+function exportWorkCSV(){
+  const hdr='"작업내용","단위","계획수량","전일누계","금일수량","비고"\n';
+  const rows=workData.map(w=>[w.work,w.unit,w.plan||0,w.prev||0,w.today||0,w.note||''].map(v=>`"${v}"`).join(',')).join('\n');
+  dl(`작업물량_${today()}.csv`,'﻿'+hdr+rows);
+  showToast('✓ 다운로드 완료');
+}
+
+// ── Helpers ───────────────────────────────────────────────
+// 엑셀의 모든 날짜 형식을 YYYY-MM-DD 로 정규화
+function parseExcelDate(val){
+  if(val===null||val===undefined||val==='')return'';
+  const s=String(val).trim();
+  if(!s)return'';
+  // 엑셀 시리얼 숫자 (예: 44927 → 2023-01-01)
+  if(/^\d+(\.\d+)?$/.test(s)){
+    const n=Math.floor(parseFloat(s));
+    if(n>=30000&&n<2958466){const d=new Date(Date.UTC(1899,11,30)+n*86400000);return d.toISOString().slice(0,10);}
+  }
+  // YYYY-MM-DD / YYYY/MM/DD / YYYY.MM.DD (구분자 -, /, . 모두 허용, 1~2자리 월/일 허용)
+  let m=s.match(/^(\d{4})[\/\.\-](\d{1,2})[\/\.\-](\d{1,2})$/);
+  if(m)return`${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  // YYYY년 M월 D일 (한국어)
+  m=s.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+  if(m)return`${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  // DD/MM/YYYY 또는 DD.MM.YYYY 또는 DD-MM-YYYY (일 먼저, 4자리 년)
+  m=s.match(/^(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{4})$/);
+  if(m){
+    const d=parseInt(m[1]),mo=parseInt(m[2]);
+    if(d>12)return`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+    if(mo>12)return`${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+    return`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  }
+  // YY-MM-DD 또는 YY/MM/DD 또는 YY.MM.DD (2자리 년)
+  m=s.match(/^(\d{2})[\/\.\-](\d{1,2})[\/\.\-](\d{1,2})$/);
+  if(m){const y=parseInt(m[1])>=50?'19'+m[1]:'20'+m[1];return`${y}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;}
+  // DD-MMM-YY 또는 DD-MMM-YYYY (예: 15-Jan-24, 15-Jan-2024)
+  const MON={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
+  m=s.match(/^(\d{1,2})[-\/\s]([A-Za-z]{3})[-\/\s](\d{2,4})$/);
+  if(m){const mo=MON[m[2].toLowerCase()];if(mo){const y=m[3].length===2?(parseInt(m[3])>=50?'19'+m[3]:'20'+m[3]):m[3];return`${y}-${mo}-${m[1].padStart(2,'0')}`;}}
+  return'';
+}
+function pctColor(p){return p>=100?'#3B6D11':p>=70?'#185FA5':p>=40?'#BA7517':'#A32D2D';}
+function today(){return new Date().toISOString().slice(0,10);}
+function setToday(){
+  document.getElementById('today-date').value=today();
+  document.getElementById('prev-date').value=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  calcAndRender();
+}
+
+function updateImportStatus(){
+  const el=document.getElementById('import-status');
+  el.innerHTML=lastImport
+    ?`<i class="ti ti-circle-check" style="color:#3B6D11"></i> 일보 ${importedReports.length}건 연동 <small style="color:var(--tx2)">${lastImport}</small>`
+    :`<i class="ti ti-circle-x" style="color:var(--tx2)"></i> 일보 미연동`;
+}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300);}
+function dl(name,content){
+  const blob=new Blob([content],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
+}
+
+initApp();
+</script>
+</body>
+</html>
