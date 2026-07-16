@@ -127,7 +127,7 @@
 
 <header>
   <div class="hdr">
-    <div class="hdr-title"><img src="icon-192.png" alt=""/>공정관리 <small>Process Management</small></div>
+    <div class="hdr-title"><img src="icon-192.png" alt=""/>공정관리 <small>Process Management</small> <small id="hdrProjectCompany"></small></div>
     <div class="tab-nav">
       <button class="tab-btn on" id="tbtn-proc"  onclick="showTab('proc')"><i class="ti ti-chart-bar"></i> 공정률</button>
       <button class="tab-btn"   id="tbtn-check" onclick="showTab('check')"><i class="ti ti-checklist"></i> 작업물량/수량</button>
@@ -257,6 +257,12 @@
 <div id="toast"></div>
 
 <script>
+(function(){
+  var p=localStorage.getItem('member_project')||'';
+  var c=localStorage.getItem('member_company')||'';
+  var t=[p,c].filter(Boolean).join(' · ');
+  if(t) document.getElementById('hdrProjectCompany').textContent=t;
+})();
 const PROC_ITEMS=[
   {item:'DCS Panel',unit:'면'},{item:'LCP',unit:'면'},
   {item:'Junction Box',unit:'EA'},{item:'Field Instrument',unit:'EA'},
