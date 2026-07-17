@@ -257,6 +257,10 @@
 <div id="toast"></div>
 
 <script>
+// ── 로그인 가드: report/shoot와 같은 localStorage 키(member_id) 사용.
+// 로그인 없이 이 URL로 바로 들어오는 걸 막고, report 로그인 화면을 거치게 한다.
+if(!localStorage.getItem('member_id')){ location.href='/report/app/login.html'; }
+
 (function(){
   var p=localStorage.getItem('member_project')||'';
   var c=localStorage.getItem('member_company')||'';
