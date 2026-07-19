@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=1200">
   <title>공정관리</title>
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png"/>
@@ -122,23 +122,29 @@
     #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--sf);border:1px solid var(--bd);border-radius:20px;padding:8px 18px;font-size:12px;color:var(--tx);opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 12px #0006;}
     #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-    /* ── 모바일 대응 ── */
-    @media (max-width: 760px) {
-      .hdr{flex-wrap:wrap;height:auto;min-height:48px;padding:8px 0;}
-      .hdr-title small{display:none;}
-      .flex1{flex:0 0 100%;height:0;}
-      .tab-nav{order:2;}
-      #hdr-proc, #hdr-check{order:3;width:100%;flex-wrap:wrap;}
-      #hdr-proc > div, #hdr-check{flex-wrap:wrap;}
-      .hdr > .hdr-sep, .hdr > .btn-primary{order:4;}
-      .page{padding:10px;}
-      .ctrl,.filter-bar,.cs-toolbar{padding:8px;}
-      .cs-search,.cs-tag-inp{width:100%;}
+    /* 모바일은 PC와 동일한 레이아웃을 그대로 축소해서 보여주고 핀치줌으로 확인하는 방식이라
+       위 리플로우는 쓰지 않음. 조회 전용 모드에서는 편집/추가/삭제/저장류만 숨기거나 잠근다. */
+    html.view-only .adm-only { display: none !important; }
+    html.view-only .tbl-wrap input,
+    html.view-only .tbl-wrap .lock-icon,
+    html.view-only .cs-row input {
+      pointer-events: none !important;
+      background: transparent !important;
+      border-color: transparent !important;
+      color: inherit !important;
     }
+    html.view-only .cs-edit-btn,
+    html.view-only .cs-del-btn,
+    html.view-only .wv-del-btn { display: none !important; }
   </style>
 </head>
 <body>
 <script src="/report/admin-gate.js"></script>
+<script>
+(function(){
+  if(/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)) document.documentElement.classList.add('view-only');
+})();
+</script>
 
 <header>
   <div class="hdr">
@@ -149,7 +155,7 @@
     </div>
     <div class="flex1"></div>
 
-    <div id="hdr-proc" style="display:flex;gap:6px;align-items:center">
+    <div id="hdr-proc" class="adm-only" style="display:flex;gap:6px;align-items:center">
       <div id="hdr-sub-qty" style="display:flex;gap:6px;align-items:center">
         <label class="btn"><i class="ti ti-table-import"></i> 계획 CSV<input type="file" class="file-inp" accept=".csv" onchange="handleProcCSV(this)"></label>
         <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleJSONImport(this)"></label>
@@ -163,7 +169,7 @@
       <div class="hdr-sep"></div>
       <button class="btn" id="btn-proc-edit" onclick="toggleProcEditMode()"><i class="ti ti-edit"></i> 전체 수정</button>
     </div>
-    <div id="hdr-check" style="display:none;gap:6px;align-items:center">
+    <div id="hdr-check" class="adm-only" style="display:none;gap:6px;align-items:center">
       <label class="btn"><i class="ti ti-table-import"></i> CSV 업로드<input type="file" class="file-inp" accept=".csv" onchange="handleCheckCSV(this)"></label>
       <button class="btn" onclick="exportCheckCSV()"><i class="ti ti-download"></i> CSV 다운로드</button>
       <div class="hdr-sep"></div>
@@ -172,8 +178,8 @@
       <button class="btn" id="btn-edit-mode" onclick="toggleEditMode()"><i class="ti ti-edit"></i> 전체 수정</button>
     </div>
 
-    <div class="hdr-sep"></div>
-    <button class="btn btn-primary" onclick="saveData()"><i class="ti ti-device-floppy"></i> 저장</button>
+    <div class="hdr-sep adm-only"></div>
+    <button class="btn btn-primary adm-only" onclick="saveData()"><i class="ti ti-device-floppy"></i> 저장</button>
   </div>
 </header>
 
@@ -239,9 +245,9 @@
   </div>
   <div class="cs-toolbar">
     <input class="cs-search" id="cs-search" placeholder="TAG 검색 (실시간)..." oninput="applyFilter()">
-    <div class="ctrl-sep"></div>
-    <input class="cs-tag-inp" id="cs-new-tag" placeholder="TAG NO. 입력" onkeydown="if(event.key==='Enter')addTagRow()">
-    <button class="btn btn-primary btn-sm" onclick="addTagRow()"><i class="ti ti-plus"></i> TAG 추가</button>
+    <div class="ctrl-sep adm-only"></div>
+    <input class="cs-tag-inp adm-only" id="cs-new-tag" placeholder="TAG NO. 입력" onkeydown="if(event.key==='Enter')addTagRow()">
+    <button class="btn btn-primary btn-sm adm-only" onclick="addTagRow()"><i class="ti ti-plus"></i> TAG 추가</button>
   </div>
   <div class="filter-bar">
     <span class="ctrl-lbl"><i class="ti ti-filter"></i> 필터</span>
