@@ -9,23 +9,26 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <style>
     /* report(작업일보) 앱과 같은 톤(밝은 파랑 계열)으로 통일 — 다크테마 값을 대체 */
-    :root{--bg:#F0F4F8;--sf:#fff;--sf2:#F7FAFC;--bd:#D1DCE8;--bd2:#C8D8E8;--tx:#1A2332;--tx2:#5A7A9A;--ac:#2E5F9E;--r:6px;}
+    :root{--bg:#F0F4F8;--sf:#fff;--sf2:#F7FAFC;--bd:#D1DCE8;--bd2:#C8D8E8;--tx:#1A2332;--tx2:#5A7A9A;--ac:#2E5F9E;--ac2:#1E3A5F;--r:6px;}
     *{box-sizing:border-box;margin:0;padding:0;}
     html{overflow-y:scroll;}
     body{background:var(--bg);color:var(--tx);font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:13px;min-height:100vh;}
 
-    /* Header */
-    header{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 16px;position:sticky;top:0;z-index:200;}
-    .hdr{display:flex;align-items:center;gap:8px;height:48px;max-width:1400px;margin:0 auto;}
+    /* Header — 작업일보(report) 앱과 같은 진한 남색 그라디언트로 통일, 글자색은 어두운 배경에 맞춰 조정 */
+    header{background:linear-gradient(135deg,var(--ac2),var(--ac));border-bottom:none;padding:0 16px;position:sticky;top:0;z-index:200;}
+    .hdr{display:flex;align-items:center;gap:8px;height:48px;max-width:1400px;margin:0 auto;color:#fff;}
     .hdr-title{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;}
     .hdr-title img{width:28px;height:28px;border-radius:6px;}
-    .hdr-title small{font-size:11px;color:var(--tx2);font-weight:400;margin-left:6px;}
+    .hdr-title small{font-size:11px;color:rgba(255,255,255,0.65);font-weight:400;margin-left:6px;}
     .tab-nav{display:flex;gap:2px;margin:0 8px;}
-    .tab-btn{padding:4px 14px;border-radius:var(--r);border:1px solid transparent;background:none;color:var(--tx2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;}
-    .tab-btn:hover{background:var(--sf2);color:var(--tx);}
-    .tab-btn.on{background:var(--sf2);border-color:var(--bd);color:var(--tx);font-weight:600;}
-    .hdr-sep{width:1px;height:22px;background:var(--bd);}
+    .tab-btn{padding:4px 14px;border-radius:var(--r);border:1px solid transparent;background:none;color:rgba(255,255,255,0.75);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;}
+    .tab-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
+    .tab-btn.on{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.3);color:#fff;font-weight:600;}
+    .hdr-sep{width:1px;height:22px;background:rgba(255,255,255,0.25);}
     .flex1{flex:1;}
+    header .btn{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.3);color:#fff;}
+    header .btn:hover{background:rgba(255,255,255,0.22);}
+    header .btn-primary{box-shadow:0 0 0 1px rgba(255,255,255,0.35);}
 
     /* Buttons */
     .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:var(--r);border:1px solid var(--bd);background:var(--sf2);color:var(--tx);font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap;}
