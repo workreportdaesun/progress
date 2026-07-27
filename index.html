@@ -21,15 +21,18 @@
     .hdr-title{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;}
     .hdr-title img{width:28px;height:28px;border-radius:6px;}
     .hdr-title small{font-size:11px;color:rgba(255,255,255,0.65);font-weight:400;margin-left:6px;}
-    .tab-nav{display:flex;gap:2px;margin:0 8px;}
-    .tab-btn{padding:4px 14px;border-radius:var(--r);border:1px solid transparent;background:none;color:rgba(255,255,255,0.75);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;}
-    .tab-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
-    .tab-btn.on{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.3);color:#fff;font-weight:600;}
-    .hdr-sep{width:1px;height:22px;background:rgba(255,255,255,0.25);}
     .flex1{flex:1;}
     header .btn{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.3);color:#fff;}
     header .btn:hover{background:rgba(255,255,255,0.22);}
     header .btn-primary{box-shadow:0 0 0 1px rgba(255,255,255,0.35);}
+
+    /* 탭바 — 헤더(남색)와 분리된 두 번째 행. 탭/버튼이 많아 한 줄에 다 안 들어가던 문제를 해결 */
+    .tab-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:1400px;margin:0 auto;padding:8px 16px;background:var(--sf);border-bottom:1px solid var(--bd);position:sticky;top:48px;z-index:190;}
+    .tab-nav{display:flex;gap:2px;}
+    .tab-btn{padding:5px 14px;border-radius:var(--r);border:1px solid var(--bd);background:var(--bg);color:var(--tx2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;}
+    .tab-btn:hover{border-color:var(--ac);color:var(--tx);}
+    .tab-btn.on{background:var(--ac);border-color:var(--ac);color:#fff;}
+    .hdr-sep{width:1px;height:22px;background:var(--bd);}
 
     /* Buttons */
     .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:var(--r);border:1px solid var(--bd);background:var(--sf2);color:var(--tx);font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap;}
@@ -153,40 +156,41 @@
 
 <header>
   <div class="hdr">
-    <div class="hdr-title"><img src="icon-mark.png" alt=""/>공정관리 <small>Process Management</small> <small id="hdrProjectCompany"></small></div>
-    <div class="tab-nav">
-      <button class="tab-btn on" id="tbtn-proc"  onclick="showTab('proc')"><i class="ti ti-chart-bar"></i> 공정률</button>
-      <button class="tab-btn"   id="tbtn-check" onclick="showTab('check')"><i class="ti ti-checklist"></i> 작업물량/수량</button>
-    </div>
+    <div class="hdr-title"><img src="icon-mark.png" alt=""/>공정관리 <small id="hdrProjectCompany"></small></div>
     <div class="flex1"></div>
-
-    <div id="hdr-proc" class="adm-only" style="display:flex;gap:6px;align-items:center">
-      <div id="hdr-sub-qty" style="display:flex;gap:6px;align-items:center">
-        <label class="btn"><i class="ti ti-table-import"></i> 계획 CSV<input type="file" class="file-inp" accept=".csv" onchange="handleProcCSV(this)"></label>
-        <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleJSONImport(this)"></label>
-        <button class="btn" onclick="exportProcCSV()"><i class="ti ti-download"></i> 내보내기</button>
-      </div>
-      <div id="hdr-sub-vol" style="display:none;gap:6px;align-items:center">
-        <label class="btn"><i class="ti ti-table-import"></i> 계획 CSV<input type="file" class="file-inp" accept=".csv" onchange="handleVolCSV(this)"></label>
-        <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleVolJSONImport(this)"></label>
-        <button class="btn" onclick="exportVolCSV()"><i class="ti ti-download"></i> 내보내기</button>
-      </div>
-      <div class="hdr-sep"></div>
-      <button class="btn" id="btn-proc-edit" onclick="toggleProcEditMode()"><i class="ti ti-edit"></i> 전체 수정</button>
-    </div>
-    <div id="hdr-check" class="adm-only" style="display:none;gap:6px;align-items:center">
-      <label class="btn"><i class="ti ti-table-import"></i> CSV 업로드<input type="file" class="file-inp" accept=".csv" onchange="handleCheckCSV(this)"></label>
-      <button class="btn" onclick="exportCheckCSV()"><i class="ti ti-download"></i> CSV 다운로드</button>
-      <div class="hdr-sep"></div>
-      <button class="btn btn-green" onclick="syncCheckToProc()"><i class="ti ti-refresh"></i> 공정률 반영</button>
-      <div class="hdr-sep"></div>
-      <button class="btn" id="btn-edit-mode" onclick="toggleEditMode()"><i class="ti ti-edit"></i> 전체 수정</button>
-    </div>
-
-    <div class="hdr-sep adm-only"></div>
     <button class="btn btn-primary adm-only" onclick="saveData()"><i class="ti ti-device-floppy"></i> 저장</button>
   </div>
 </header>
+<div class="tab-bar">
+  <div class="tab-nav">
+    <button class="tab-btn on" id="tbtn-proc"  onclick="showTab('proc')"><i class="ti ti-chart-bar"></i> 공정률</button>
+    <button class="tab-btn"   id="tbtn-check" onclick="showTab('check')"><i class="ti ti-checklist"></i> 작업물량/수량</button>
+  </div>
+  <div class="flex1"></div>
+
+  <div id="hdr-proc" class="adm-only" style="display:flex;gap:6px;align-items:center">
+    <div id="hdr-sub-qty" style="display:flex;gap:6px;align-items:center">
+      <label class="btn"><i class="ti ti-table-import"></i> 계획 CSV<input type="file" class="file-inp" accept=".csv" onchange="handleProcCSV(this)"></label>
+      <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleJSONImport(this)"></label>
+      <button class="btn" onclick="exportProcCSV()"><i class="ti ti-download"></i> 내보내기</button>
+    </div>
+    <div id="hdr-sub-vol" style="display:none;gap:6px;align-items:center">
+      <label class="btn"><i class="ti ti-table-import"></i> 계획 CSV<input type="file" class="file-inp" accept=".csv" onchange="handleVolCSV(this)"></label>
+      <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleVolJSONImport(this)"></label>
+      <button class="btn" onclick="exportVolCSV()"><i class="ti ti-download"></i> 내보내기</button>
+    </div>
+    <div class="hdr-sep"></div>
+    <button class="btn" id="btn-proc-edit" onclick="toggleProcEditMode()"><i class="ti ti-edit"></i> 전체 수정</button>
+  </div>
+  <div id="hdr-check" class="adm-only" style="display:none;gap:6px;align-items:center">
+    <label class="btn"><i class="ti ti-table-import"></i> CSV 업로드<input type="file" class="file-inp" accept=".csv" onchange="handleCheckCSV(this)"></label>
+    <button class="btn" onclick="exportCheckCSV()"><i class="ti ti-download"></i> CSV 다운로드</button>
+    <div class="hdr-sep"></div>
+    <button class="btn btn-green" onclick="syncCheckToProc()"><i class="ti ti-refresh"></i> 공정률 반영</button>
+    <div class="hdr-sep"></div>
+    <button class="btn" id="btn-edit-mode" onclick="toggleEditMode()"><i class="ti ti-edit"></i> 전체 수정</button>
+  </div>
+</div>
 
 <!-- ══ 공정률 ══════════════════════════════════════════════ -->
 <div class="page" id="page-proc">
