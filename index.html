@@ -507,9 +507,7 @@ function renderTable(){
     const col=COLORS[i%COLORS.length],c1=pctColor(p1);
     return`<tr>
       <td class="lft">${d.item}</td><td class="unit">${d.unit}</td>
-      <td><input type="number" min="0" class="plan-inp${d.planLocked?' locked':''}" value="${d.plan||''}" placeholder="입력"
-        ${d.planLocked?'readonly':`onchange="updatePlan(${i},this)"`}>
-        ${d.planLocked?`<i class="ti ti-lock lock-icon" title="잠금 해제" onclick="unlockPlan(${i})"></i>`:''}</td>
+      <td><input type="number" min="0" class="plan-inp" value="${d.plan||''}" placeholder="입력" onchange="updatePlan(${i},this)"></td>
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.prev||''}" placeholder="0" onchange="setProcPrev(${i},this)"></td>`:`<td>${d.prev>0?d.prev:''}</td>`}
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.today||''}" placeholder="0" onchange="setProcToday(${i},this)"></td>`:`<td>${d.today>0?d.today:''}</td>`}
       <td style="font-weight:600;color:${c1}">${cum>0?cum:''}</td>
@@ -535,8 +533,7 @@ function renderFooter(){
     <td style="color:${pctColor(adj)};font-size:13px">${tp>0?adj+'%':''}</td><td>–</td>
   </tr>`;
 }
-function updatePlan(i,inp){procData[i].plan=parseFloat(inp.value)||0;if(procData[i].plan>0){procData[i].planLocked=true;showToast('🔒 계획수량 잠금');}calcAndRender();}
-function unlockPlan(i){if(!confirm('잠금 해제?'))return;procData[i].planLocked=false;renderTable();}
+function updatePlan(i,inp){procData[i].plan=parseFloat(inp.value)||0;procData[i].planLocked=true;calcAndRender();}
 function updateFactor(i,inp){procData[i].factor=parseFloat(inp.value)??1;renderTable();}
 function setProcPrev(i,inp){procData[i].prev=parseFloat(inp.value)||0;procData[i].prevLocked=true;renderTable();}
 function setProcToday(i,inp){procData[i].today=parseFloat(inp.value)||0;procData[i].todayLocked=true;renderTable();}
@@ -557,9 +554,7 @@ function renderVolTable(){
     const col=COLORS[i%COLORS.length],c1=pctColor(p1);
     return`<tr>
       <td class="lft">${d.item}</td><td class="unit">${d.unit}</td>
-      <td><input type="number" min="0" class="plan-inp${d.planLocked?' locked':''}" value="${d.plan||''}" placeholder="입력"
-        ${d.planLocked?'readonly':`onchange="updateVolPlan(${i},this)"`}>
-        ${d.planLocked?`<i class="ti ti-lock lock-icon" title="잠금 해제" onclick="unlockVolPlan(${i})"></i>`:''}</td>
+      <td><input type="number" min="0" class="plan-inp" value="${d.plan||''}" placeholder="입력" onchange="updateVolPlan(${i},this)"></td>
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.prev||''}" placeholder="0" onchange="setVolPrev(${i},this)"></td>`:`<td>${d.prev>0?d.prev:''}</td>`}
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.today||''}" placeholder="0" onchange="setVolProcToday(${i},this)"></td>`:`<td>${d.today>0?d.today:''}</td>`}
       <td style="font-weight:600;color:${c1}">${cum>0?cum:''}</td>
@@ -585,8 +580,7 @@ function renderVolFooter(){
     <td style="color:${pctColor(adj)};font-size:13px">${tp>0?adj+'%':''}</td><td>–</td>
   </tr>`;
 }
-function updateVolPlan(i,inp){procVolData[i].plan=parseFloat(inp.value)||0;if(procVolData[i].plan>0){procVolData[i].planLocked=true;showToast('🔒 계획수량 잠금');}renderVolTable();}
-function unlockVolPlan(i){if(!confirm('잠금 해제?'))return;procVolData[i].planLocked=false;renderVolTable();}
+function updateVolPlan(i,inp){procVolData[i].plan=parseFloat(inp.value)||0;procVolData[i].planLocked=true;renderVolTable();}
 function updateVolFactor(i,inp){procVolData[i].factor=parseFloat(inp.value)??1;renderVolTable();}
 function setVolPrev(i,inp){procVolData[i].prev=parseFloat(inp.value)||0;procVolData[i].prevLocked=true;renderVolTable();}
 function setVolProcToday(i,inp){procVolData[i].today=parseFloat(inp.value)||0;procVolData[i].todayLocked=true;renderVolTable();}
