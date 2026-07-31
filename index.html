@@ -164,7 +164,6 @@
   <div class="hdr">
     <div class="hdr-title"><img src="icon-mark.png" alt=""/>공정관리 <small id="hdrProjectCompany"></small></div>
     <div class="flex1"></div>
-    <button class="btn btn-primary adm-only" onclick="saveData()"><i class="ti ti-device-floppy"></i> 저장</button>
   </div>
 </header>
 <div class="tab-bar">
@@ -180,23 +179,16 @@
         <label class="btn"><i class="ti ti-table-import"></i> 계획 CSV<input type="file" class="file-inp" accept=".csv" onchange="handleProcCSV(this)"></label>
         <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleJSONImport(this)"></label>
       </span>
-      <button class="btn" onclick="exportProcCSV()"><i class="ti ti-download"></i> 내보내기</button>
     </div>
     <div id="hdr-sub-vol" style="display:none;gap:6px;align-items:center">
       <label class="btn"><i class="ti ti-table-import"></i> 계획 CSV<input type="file" class="file-inp" accept=".csv" onchange="handleVolCSV(this)"></label>
       <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleVolJSONImport(this)"></label>
-      <button class="btn" onclick="exportVolCSV()"><i class="ti ti-download"></i> 내보내기</button>
     </div>
-    <div class="hdr-sep"></div>
-    <button class="btn" id="btn-proc-edit" onclick="toggleProcEditMode()"><i class="ti ti-edit"></i> 전체 수정</button>
   </div>
   <div id="hdr-check" class="adm-only" style="display:none;gap:6px;align-items:center">
     <label class="btn"><i class="ti ti-table-import"></i> CSV 업로드<input type="file" class="file-inp" accept=".csv" onchange="handleCheckCSV(this)"></label>
-    <button class="btn" onclick="exportCheckCSV()"><i class="ti ti-download"></i> CSV 다운로드</button>
     <div class="hdr-sep"></div>
     <button class="btn btn-green" onclick="syncCheckToProc()"><i class="ti ti-refresh"></i> 공정률 반영</button>
-    <div class="hdr-sep"></div>
-    <button class="btn" id="btn-edit-mode" onclick="toggleEditMode()"><i class="ti ti-edit"></i> 전체 수정</button>
   </div>
 </div>
 
@@ -671,8 +663,10 @@ function setProcToday(i,inp){procData[i].today=parseFloat(inp.value)||0;procData
 function toggleProcEditMode(){
   procEditMode=!procEditMode;
   const btn=document.getElementById('btn-proc-edit');
-  if(procEditMode){btn.innerHTML='<i class="ti ti-pencil-off"></i> 수정 중';btn.classList.add('btn-primary');}
-  else{btn.innerHTML='<i class="ti ti-edit"></i> 전체 수정';btn.classList.remove('btn-primary');}
+  if(btn){
+    if(procEditMode){btn.innerHTML='<i class="ti ti-pencil-off"></i> 수정 중';btn.classList.add('btn-primary');}
+    else{btn.innerHTML='<i class="ti ti-edit"></i> 전체 수정';btn.classList.remove('btn-primary');}
+  }
   renderTable();renderVolTable();
 }
 
@@ -958,8 +952,10 @@ function cancelEditTag(){
 function toggleEditMode(){
   editMode=!editMode;
   const btn=document.getElementById('btn-edit-mode');
-  if(editMode){btn.innerHTML='<i class="ti ti-pencil-off"></i> 수정 중';btn.classList.add('btn-primary');}
-  else{btn.innerHTML='<i class="ti ti-edit"></i> 전체 수정';btn.classList.remove('btn-primary');}
+  if(btn){
+    if(editMode){btn.innerHTML='<i class="ti ti-pencil-off"></i> 수정 중';btn.classList.add('btn-primary');}
+    else{btn.innerHTML='<i class="ti ti-edit"></i> 전체 수정';btn.classList.remove('btn-primary');}
+  }
   vsRender(document.getElementById('cs-wrap'));
 }
 
