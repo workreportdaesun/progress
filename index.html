@@ -69,6 +69,9 @@
     td.lft{text-align:left;font-weight:500;}
     td.unit{color:var(--tx2);font-size:11px;}
     tfoot td{background:var(--sf2);font-weight:600;font-size:12px;border-top:1px solid var(--bd);padding:8px 10px;text-align:center;}
+    input[type=number]{appearance:textfield;-moz-appearance:textfield;}
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
     .plan-inp{width:72px;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:3px 6px;text-align:right;font-family:inherit;}
     .plan-inp:focus{outline:none;border-color:#3ed6c9;}
     .plan-inp.locked{background:transparent;border-color:transparent;color:var(--tx2);cursor:default;pointer-events:none;}
@@ -507,7 +510,7 @@ function renderTable(){
     const col=COLORS[i%COLORS.length],c1=pctColor(p1);
     return`<tr>
       <td class="lft">${d.item}</td><td class="unit">${d.unit}</td>
-      <td><input type="number" min="0" class="plan-inp" value="${d.plan||''}" placeholder="입력" onchange="updatePlan(${i},this)"></td>
+      ${procEditMode?`<td><input type="number" min="0" class="plan-inp" value="${d.plan||''}" placeholder="입력" onchange="updatePlan(${i},this)"></td>`:`<td>${d.plan>0?d.plan:''}</td>`}
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.prev||''}" placeholder="0" onchange="setProcPrev(${i},this)"></td>`:`<td>${d.prev>0?d.prev:''}</td>`}
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.today||''}" placeholder="0" onchange="setProcToday(${i},this)"></td>`:`<td>${d.today>0?d.today:''}</td>`}
       <td style="font-weight:600;color:${c1}">${cum>0?cum:''}</td>
@@ -554,7 +557,7 @@ function renderVolTable(){
     const col=COLORS[i%COLORS.length],c1=pctColor(p1);
     return`<tr>
       <td class="lft">${d.item}</td><td class="unit">${d.unit}</td>
-      <td><input type="number" min="0" class="plan-inp" value="${d.plan||''}" placeholder="입력" onchange="updateVolPlan(${i},this)"></td>
+      ${procEditMode?`<td><input type="number" min="0" class="plan-inp" value="${d.plan||''}" placeholder="입력" onchange="updateVolPlan(${i},this)"></td>`:`<td>${d.plan>0?d.plan:''}</td>`}
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.prev||''}" placeholder="0" onchange="setVolPrev(${i},this)"></td>`:`<td>${d.prev>0?d.prev:''}</td>`}
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.today||''}" placeholder="0" onchange="setVolProcToday(${i},this)"></td>`:`<td>${d.today>0?d.today:''}</td>`}
       <td style="font-weight:600;color:${c1}">${cum>0?cum:''}</td>
