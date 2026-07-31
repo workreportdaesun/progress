@@ -502,19 +502,23 @@ function handleVolJSONImport(input){
   r.readAsText(f,'UTF-8');input.value='';
 }
 
+/* FACTOR = 작업분류가 전체 공정에서 차지하는 비중(예: 공사비 기준 가중치, 기본값 1) — 각 분류의
+   진행률(%) 자체는 FACTOR와 무관하게 그대로 보여주고, "합계"(전체 공정률)만 이 비중으로 진짜
+   가중평균한다: Σ(진행률×FACTOR)/Σ(FACTOR). 예전엔 행마다 %에 FACTOR를 곱해서 보여주고 그 값들을
+   단순평균했는데, 그건 가중평균이 아니라서 공사비 비중처럼 쓰기엔 틀린 계산이었음(2026-08-01 정정,
+   report/app/admin.html에 먼저 반영한 것과 동일한 수정을 여기도 적용). */
 function renderTable(){
   document.getElementById('proc-tbody').innerHTML=procData.map((d,i)=>{
     const cum=d.prev+d.today;
     const raw=d.plan>0?Math.min(+(cum/d.plan*100).toFixed(1),100):0;
-    const p1=+(raw*(d.factor??1)).toFixed(1);
-    const col=COLORS[i%COLORS.length],c1=pctColor(p1);
+    const col=COLORS[i%COLORS.length],c1=pctColor(raw);
     return`<tr>
       <td class="lft">${d.item}</td><td class="unit">${d.unit}</td>
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" value="${d.plan||''}" placeholder="입력" onchange="updatePlan(${i},this)"></td>`:`<td>${d.plan>0?d.plan:''}</td>`}
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.prev||''}" placeholder="0" onchange="setProcPrev(${i},this)"></td>`:`<td>${d.prev>0?d.prev:''}</td>`}
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.today||''}" placeholder="0" onchange="setProcToday(${i},this)"></td>`:`<td>${d.today>0?d.today:''}</td>`}
       <td style="font-weight:600;color:${c1}">${cum>0?cum:''}</td>
-      <td>${d.plan>0?`<div class="pbar-wrap"><div class="pbar"><div class="pbar-fill" style="width:${Math.min(p1,100)}%;background:${col}"></div></div><span class="pct-val" style="color:${c1}">${p1}%</span></div>`:'<span style="color:var(--tx2)">–</span>'}</td>
+      <td>${d.plan>0?`<div class="pbar-wrap"><div class="pbar"><div class="pbar-fill" style="width:${Math.min(raw,100)}%;background:${col}"></div></div><span class="pct-val" style="color:${c1}">${raw}%</span></div>`:'<span style="color:var(--tx2)">–</span>'}</td>
       <td><input type="number" min="0" max="9.99" step="0.01" class="factor-inp" value="${d.factor??1}" onchange="updateFactor(${i},this)"></td>
     </tr>`;
   }).join('');
@@ -525,8 +529,9 @@ function renderFooter(){
   const tprev=procData.reduce((a,d)=>a+d.prev,0);
   const ttod=procData.reduce((a,d)=>a+d.today,0);
   const tcum=tprev+ttod;
-  const valid=procData.filter(d=>d.plan>0);
-  const adj=valid.length?+(valid.reduce((a,d)=>{const c=d.prev+d.today;return a+Math.min(+(c/d.plan*100).toFixed(1),100)*(d.factor??1);},0)/valid.length).toFixed(1):0;
+  const valid=procData.filter(d=>d.plan>0&&(d.factor??1)>0);
+  const wsum=valid.reduce((a,d)=>a+(d.factor??1),0);
+  const adj=wsum>0?+(valid.reduce((a,d)=>{const c=d.prev+d.today;const raw=Math.min(+(c/d.plan*100).toFixed(1),100);return a+raw*(d.factor??1);},0)/wsum).toFixed(1):0;
   document.getElementById('proc-tfoot').innerHTML=`<tr>
     <td class="lft" colspan="2">합 계</td>
     <td>${tp>0?tp.toLocaleString():''}</td>
@@ -553,15 +558,14 @@ function renderVolTable(){
   document.getElementById('vol-proc-tbody').innerHTML=procVolData.map((d,i)=>{
     const cum=d.prev+d.today;
     const raw=d.plan>0?Math.min(+(cum/d.plan*100).toFixed(1),100):0;
-    const p1=+(raw*(d.factor??1)).toFixed(1);
-    const col=COLORS[i%COLORS.length],c1=pctColor(p1);
+    const col=COLORS[i%COLORS.length],c1=pctColor(raw);
     return`<tr>
       <td class="lft">${d.item}</td><td class="unit">${d.unit}</td>
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" value="${d.plan||''}" placeholder="입력" onchange="updateVolPlan(${i},this)"></td>`:`<td>${d.plan>0?d.plan:''}</td>`}
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.prev||''}" placeholder="0" onchange="setVolPrev(${i},this)"></td>`:`<td>${d.prev>0?d.prev:''}</td>`}
       ${procEditMode?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.today||''}" placeholder="0" onchange="setVolProcToday(${i},this)"></td>`:`<td>${d.today>0?d.today:''}</td>`}
       <td style="font-weight:600;color:${c1}">${cum>0?cum:''}</td>
-      <td>${d.plan>0?`<div class="pbar-wrap"><div class="pbar"><div class="pbar-fill" style="width:${Math.min(p1,100)}%;background:${col}"></div></div><span class="pct-val" style="color:${c1}">${p1}%</span></div>`:'<span style="color:var(--tx2)">–</span>'}</td>
+      <td>${d.plan>0?`<div class="pbar-wrap"><div class="pbar"><div class="pbar-fill" style="width:${Math.min(raw,100)}%;background:${col}"></div></div><span class="pct-val" style="color:${c1}">${raw}%</span></div>`:'<span style="color:var(--tx2)">–</span>'}</td>
       <td><input type="number" min="0" max="9.99" step="0.01" class="factor-inp" value="${d.factor??1}" onchange="updateVolFactor(${i},this)"></td>
     </tr>`;
   }).join('');
@@ -572,8 +576,9 @@ function renderVolFooter(){
   const tprev=procVolData.reduce((a,d)=>a+d.prev,0);
   const ttod=procVolData.reduce((a,d)=>a+d.today,0);
   const tcum=tprev+ttod;
-  const valid=procVolData.filter(d=>d.plan>0);
-  const adj=valid.length?+(valid.reduce((a,d)=>{const c=d.prev+d.today;return a+Math.min(+(c/d.plan*100).toFixed(1),100)*(d.factor??1);},0)/valid.length).toFixed(1):0;
+  const valid=procVolData.filter(d=>d.plan>0&&(d.factor??1)>0);
+  const wsum=valid.reduce((a,d)=>a+(d.factor??1),0);
+  const adj=wsum>0?+(valid.reduce((a,d)=>{const c=d.prev+d.today;const raw=Math.min(+(c/d.plan*100).toFixed(1),100);return a+raw*(d.factor??1);},0)/wsum).toFixed(1):0;
   document.getElementById('vol-proc-tfoot').innerHTML=`<tr>
     <td class="lft" colspan="2">합 계</td>
     <td>${tp>0?tp.toLocaleString():''}</td>
