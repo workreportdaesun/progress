@@ -307,7 +307,7 @@ var reportSynced=false, syncedAt=null;
 /* Connection은 규격(FROM/TO)으로 방향을 골라 입력 — 한쪽만 하면 0.5, 양쪽 다 하면 1로 집계
    (report/app/admin.html의 동일 함수와 같은 규칙, 이 파일은 별도 스크립트 컨텍스트라 중복 정의). */
 function connectionQtyWeight(cat, spec){
-  return (cat==='Connection' && (spec==='FROM' || spec==='TO')) ? 0.5 : 1;
+  return (cat==='CONNECTION' && (spec==='FROM' || spec==='TO')) ? 0.5 : 1;
 }
 
 (function(){
@@ -317,25 +317,25 @@ function connectionQtyWeight(cat, spec){
   if(t) document.getElementById('hdrProjectCompany').textContent=t;
 })();
 const PROC_ITEMS=[
-  {item:'DCS Panel',unit:'면'},{item:'LCP',unit:'면'},
-  {item:'Junction Box',unit:'EA'},{item:'Instrument',unit:'EA'},
-  {item:'Cable Duct',unit:'M'},{item:'Cable Tray',unit:'M'},{item:'Cable Pulling',unit:'M'},
-  {item:'Conduit Pipe',unit:'M'},{item:'Air Pipe',unit:'M'},
-  {item:'Hook Up',unit:'M'},
-  {item:'Support',unit:'EA'},{item:'Stanchion',unit:'EA'},
-  {item:'Connection',unit:'Point'},{item:'Line Check',unit:'Line'},
-  {item:'Loop Test',unit:'Point'},{item:'Leak Test',unit:'Line'},
-  {item:'Calibration',unit:'EA'},
-  {item:'Steam Tracing',unit:'M'},
-  {item:'Scaffolding',unit:'식'},{item:'Others',unit:'식'},
+  {item:'DCS PANEL',unit:'면'},{item:'LCP',unit:'면'},
+  {item:'JUNCTION BOX',unit:'EA'},{item:'INSTRUMENT',unit:'EA'},
+  {item:'CABLE DUCT',unit:'M'},{item:'CABLE TRAY',unit:'M'},{item:'CABLE PULLING',unit:'M'},
+  {item:'CONDUIT PIPE',unit:'M'},{item:'AIR PIPE',unit:'M'},
+  {item:'HOOK UP',unit:'M'},
+  {item:'SUPPORT',unit:'EA'},{item:'STANCHION',unit:'EA'},
+  {item:'CONNECTION',unit:'Point'},{item:'LINE CHECK',unit:'Line'},
+  {item:'LOOP TEST',unit:'Point'},{item:'LEAK TEST',unit:'Line'},
+  {item:'CALIBRATION',unit:'EA'},
+  {item:'STEAM TRACING',unit:'M'},
+  {item:'SCAFFOLDING',unit:'식'},{item:'OTHERS',unit:'식'},
 ];
-const ABBR={'DCS Panel':'DCS','LCP':'LCP','Junction Box':'J-Box',
-  'Instrument':'Inst','Cable Duct':'C.Duct','Cable Tray':'C.Tray','Cable Pulling':'C.Pull',
-  'Conduit Pipe':'Conduit','Air Pipe':'Air','Hook Up':'H/U',
-  'Stanchion':'Stanch','Support':'Supp.','Connection':'Conn.',
-  'Line Check':'L.Chk','Loop Test':'Loop','Leak Test':'Leak',
-  'Calibration':'Calib','Steam Tracing':'S.Trace',
-  'Scaffolding':'Scaff.','Others':'Etc.'};
+const ABBR={'DCS PANEL':'DCS','LCP':'LCP','JUNCTION BOX':'J-Box',
+  'INSTRUMENT':'Inst','CABLE DUCT':'C.Duct','CABLE TRAY':'C.Tray','CABLE PULLING':'C.Pull',
+  'CONDUIT PIPE':'Conduit','AIR PIPE':'Air','HOOK UP':'H/U',
+  'STANCHION':'Stanch','SUPPORT':'Supp.','CONNECTION':'Conn.',
+  'LINE CHECK':'L.Chk','LOOP TEST':'Loop','LEAK TEST':'Leak',
+  'CALIBRATION':'Calib','STEAM TRACING':'S.Trace',
+  'SCAFFOLDING':'Scaff.','OTHERS':'Etc.'};
 const COLORS=['#2d5a8e','#3B6D11','#BA7517','#A32D2D','#185FA5','#854F0B',
   '#6B4C9A','#1a6e6e','#c06800','#005f5f','#8B0000','#556B2F',
   '#4B0082','#2F4F4F','#8B4513','#5F9EA0','#2d5a8e','#3B6D11',
