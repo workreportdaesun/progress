@@ -182,10 +182,6 @@
         <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleJSONImport(this)"></label>
       </span>
     </div>
-    <div id="hdr-sub-vol" style="display:none;gap:6px;align-items:center">
-      <label class="btn"><i class="ti ti-table-import"></i> 계획 CSV<input type="file" class="file-inp" accept=".csv" onchange="handleVolCSV(this)"></label>
-      <label class="btn btn-green"><i class="ti ti-file-import"></i> 일보 가져오기<input type="file" class="file-inp" accept=".json" onchange="handleVolJSONImport(this)"></label>
-    </div>
   </div>
   <div id="hdr-check" class="adm-only" style="display:none;gap:6px;align-items:center">
     <label class="btn"><i class="ti ti-table-import"></i> CSV 업로드<input type="file" class="file-inp" accept=".csv" onchange="handleCheckCSV(this)"></label>
@@ -196,10 +192,10 @@
 
 <!-- ══ 공정률 ══════════════════════════════════════════════ -->
 <div class="page" id="page-proc">
-  <div style="display:flex;gap:4px;margin-bottom:12px">
-    <button class="tab-btn on" id="sbtn-qty" onclick="showProcSub('qty')"><i class="ti ti-chart-bar"></i> 작업수량</button>
-    <button class="tab-btn"   id="sbtn-vol" onclick="showProcSub('vol')"><i class="ti ti-list-details"></i> 작업물량</button>
-  </div>
+  <!-- 공정률은 작업물량(입력 수량) 하나로만 본다(2026-08-10, 사용자 확정) — CHECK LIST와 같이
+       서브탭 없이 한 화면이다. 수기로 계획을 넣던 옛 "작업물량" 표(proc-sub-vol)는 삭제했다.
+       여기 표가 작업일보 관리자 화면의 공정률과 같은 규칙으로 집계된 그 물량이다. -->
+  <div style="font-size:12px;color:var(--tx2);margin-bottom:10px;">작업물량 기준 — 작업일보 관리자 화면과 같은 집계입니다.</div>
   <div id="proc-sub-qty">
     <div class="ctrl" id="qty-legacy-ctrl" style="display:none">
       <span class="ctrl-lbl">전일 기준일</span>
@@ -226,29 +222,6 @@
         </tr></thead>
         <tbody id="proc-tbody"></tbody>
         <tfoot id="proc-tfoot"></tfoot>
-      </table>
-    </div>
-  </div>
-  <div id="proc-sub-vol" style="display:none">
-    <div class="ctrl">
-      <span class="ctrl-lbl">전일 기준일</span>
-      <input type="date" class="date-inp" id="vol-prev-date" onchange="calcVolAndRender()">
-      <span class="ctrl-lbl">금일</span>
-      <input type="date" class="date-inp" id="vol-today-date" onchange="calcVolAndRender()">
-      <button class="btn btn-sm" onclick="setVolToday()"><i class="ti ti-calendar-today"></i> 오늘</button>
-      <div class="ctrl-sep"></div>
-      <div class="import-status" id="vol-import-status"><i class="ti ti-circle-x"></i> 일보 미연동</div>
-    </div>
-    <div class="tbl-wrap">
-      <table style="min-width:760px">
-        <thead><tr>
-          <th class="lft" style="width:160px">작업분류</th>
-          <th style="width:52px">단위</th><th style="width:90px">계획수량</th>
-          <th style="width:72px">전일누계</th><th style="width:72px">금일</th><th style="width:72px">누계</th>
-          <th style="width:110px">공정률</th><th style="width:58px">FACTOR</th>
-        </tr></thead>
-        <tbody id="vol-proc-tbody"></tbody>
-        <tfoot id="vol-proc-tfoot"></tfoot>
       </table>
     </div>
   </div>
@@ -526,8 +499,10 @@ async function initApp(){
   const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
   document.getElementById('prev-date').value=sprev||yest;
   document.getElementById('today-date').value=stod||today;
-  document.getElementById('vol-prev-date').value=svprev||yest;
-  document.getElementById('vol-today-date').value=svtod||today;
+  // 작업물량 표는 삭제됐다(2026-08-10) — 관련 입력칸이 더 이상 없으므로 있을 때만 건드린다.
+  var _vp=document.getElementById('vol-prev-date'), _vt=document.getElementById('vol-today-date');
+  if(_vp) _vp.value=svprev||yest;
+  if(_vt) _vt.value=svtod||today;
 
   updateImportStatus();
   updateVolImportStatus();
@@ -547,8 +522,8 @@ async function saveData(){
     dbSet('volReports',importedVolReports),dbSet('lastVolImport',lastVolImport),
     dbSet('prevDate',document.getElementById('prev-date').value),
     dbSet('todayDate',document.getElementById('today-date').value),
-    dbSet('volPrevDate',document.getElementById('vol-prev-date').value),
-    dbSet('volTodayDate',document.getElementById('vol-today-date').value),
+    dbSet('volPrevDate',(document.getElementById('vol-prev-date')||{}).value||''),
+    dbSet('volTodayDate',(document.getElementById('vol-today-date')||{}).value||''),
     // 서버에서 받아온 목록은 저장하지 않는다 — 저장 대상은 항상 수기로 입력했던 원본이다.
     dbSet('checkData1',localCheckQtyData),dbSet('checkVolData',checkVolData),
   ]);
@@ -561,10 +536,10 @@ let activeProcSub='qty';
 function showProcSub(sub){
   activeProcSub=sub;
   document.getElementById('proc-sub-qty').style.display=sub==='qty'?'block':'none';
-  document.getElementById('proc-sub-vol').style.display=sub==='vol'?'block':'none';
+  var _psv=document.getElementById('proc-sub-vol'); if(_psv) _psv.style.display=sub==='vol'?'block':'none';
   ['qty','vol'].forEach(s=>document.getElementById('sbtn-'+s).classList.toggle('on',s===sub));
   document.getElementById('hdr-sub-qty').style.display=sub==='qty'?'flex':'none';
-  document.getElementById('hdr-sub-vol').style.display=sub==='vol'?'flex':'none';
+  var _hsv=document.getElementById('hdr-sub-vol'); if(_hsv) _hsv.style.display=sub==='vol'?'flex':'none';
   window.scrollTo({top:0,behavior:'instant'});
 }
 function showTab(tab){
@@ -595,8 +570,10 @@ function calcFromReports(){
   });
 }
 function calcVolFromReports(){
-  const pd=document.getElementById('vol-prev-date').value;
-  const td=document.getElementById('vol-today-date').value;
+  const _pdEl=document.getElementById('vol-prev-date'), _tdEl=document.getElementById('vol-today-date');
+  if(!_pdEl||!_tdEl) return;   // 작업물량 표 삭제됨
+  const pd=_pdEl.value;
+  const td=_tdEl.value;
   procVolData.forEach(d=>{if(!d.prevLocked)d.prev=0;if(!d.todayLocked)d.today=0;});
   importedVolReports.forEach(r=>{
     const rd=r.date||'';
@@ -614,13 +591,16 @@ function calcAll(){calcAndRender();calcVolAndRender();if(checkQtyData.length||ch
 
 function updateVolImportStatus(){
   const el=document.getElementById('vol-import-status');
+  if(!el) return;   // 작업물량 표 삭제됨
   el.innerHTML=lastVolImport
     ?`<i class="ti ti-circle-check" style="color:#3B6D11"></i> 일보 ${importedVolReports.length}건 연동 <small style="color:var(--tx2)">${lastVolImport}</small>`
     :`<i class="ti ti-circle-x" style="color:var(--tx2)"></i> 일보 미연동`;
 }
 function setVolToday(){
-  document.getElementById('vol-today-date').value=today();
-  document.getElementById('vol-prev-date').value=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  var _t=document.getElementById('vol-today-date'), _p=document.getElementById('vol-prev-date');
+  if(!_t||!_p) return;   // 작업물량 표 삭제됨
+  _t.value=today();
+  _p.value=new Date(Date.now()-86400000).toISOString().slice(0,10);
   calcVolAndRender();
 }
 function handleVolJSONImport(input){
@@ -706,7 +686,9 @@ function toggleProcEditMode(){
 
 // ── 작업물량 공정률 렌더 ───────────────────────────────────
 function renderVolTable(){
-  document.getElementById('vol-proc-tbody').innerHTML=procVolData.map((d,i)=>{
+  const _vb=document.getElementById('vol-proc-tbody');
+  if(!_vb) return;   // 작업물량 표 삭제됨(2026-08-10) — 이 표는 더 이상 그리지 않는다
+  _vb.innerHTML=procVolData.map((d,i)=>{
     const cum=d.prev+d.today;
     const raw=d.plan>0?Math.min(+(cum/d.plan*100).toFixed(1),100):0;
     const col=COLORS[i%COLORS.length],c1=pctColor(raw);
@@ -730,7 +712,9 @@ function renderVolFooter(){
   const valid=procVolData.filter(d=>d.plan>0&&(d.factor??1)>0);
   const wsum=valid.reduce((a,d)=>a+(d.factor??1),0);
   const adj=wsum>0?+(valid.reduce((a,d)=>{const c=d.prev+d.today;const raw=Math.min(+(c/d.plan*100).toFixed(1),100);return a+raw*(d.factor??1);},0)/wsum).toFixed(1):0;
-  document.getElementById('vol-proc-tfoot').innerHTML=`<tr>
+  const _vf=document.getElementById('vol-proc-tfoot');
+  if(!_vf) return;   // 작업물량 표 삭제됨
+  _vf.innerHTML=`<tr>
     <td class="lft" colspan="2">합 계</td>
     <td>${tp>0?tp.toLocaleString():''}</td>
     <td>${tprev>0?tprev.toLocaleString():''}</td>
@@ -1098,6 +1082,14 @@ function exportCheckCSV(){
 
 // Check → Proc sync
 function syncCheckToProc(silent=false){
+  /* 공정률이 작업일보와 동기화된 상태면 CHECK LIST 건수로 덮어쓰지 않는다(2026-08-10).
+     예전엔 이 함수가 계획=TAG 건수, 전일/금일=날짜가 찍힌 TAG 수로 procData를 갈아치웠는데,
+     지금 공정률은 관리자 화면과 같은 규칙으로 daily_reports에서 집계한 값이라 그걸 덮으면
+     새로고침 전까지 엉뚱한 숫자가 보인다. */
+  if(reportSynced){
+    if(!silent) showToast('공정률은 작업일보와 자동 동기화됩니다 — 여기서 덮어쓰지 않습니다');
+    return;
+  }
   const todayDate=document.getElementById('today-date').value;
   const prevDate=todayDate?new Date(new Date(todayDate).getTime()-86400000).toISOString().slice(0,10):'';
   procData.forEach(d=>{
