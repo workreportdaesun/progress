@@ -256,10 +256,10 @@
 
 <!-- ══ Check List ══════════════════════════════════════════ -->
 <div class="page hidden" id="page-check">
-  <div style="display:flex;gap:4px;margin-bottom:12px">
-    <button class="tab-btn on" id="ck-sbtn-qty" onclick="switchCheckSub('qty')"><i class="ti ti-chart-bar"></i> 작업수량</button>
-    <button class="tab-btn"   id="ck-sbtn-vol" onclick="switchCheckSub('vol')"><i class="ti ti-list-details"></i> 작업물량</button>
-  </div>
+  <!-- CHECK LIST는 날짜만 본다(2026-08-10, 사용자 확정) — 작업일보 관리자 화면의 Check List와
+       같은 기준이다. 수량을 넣던 "작업물량" 서브탭은 여기서 뺐다(데이터·코드는 남아 있으므로
+       필요하면 이 버튼만 되살리면 된다). -->
+  <div id="ck-sync-note" style="font-size:12px;color:var(--tx2);margin-bottom:10px;"></div>
   <div class="cs-toolbar">
     <input class="cs-search" id="cs-search" placeholder="TAG 검색 (실시간)..." oninput="applyFilter()">
     <div class="ctrl-sep adm-only"></div>
@@ -393,16 +393,40 @@ async function loadReportProgressData(){
 
     var today=new Date();
     var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    /* 작업일보 관리자 화면(admin.html aggregateProcVol)과 같은 규칙으로 집계한다
+       (2026-08-10 — 예전엔 여기만 날짜별로 그냥 더해서, 같은 기기번호가 진행→완료로 여러 날
+       입력되면 전일누계와 금일에 두 번 잡혔다).
+
+       집계 대상은 "물량(입력 수량)"이고, 중복만 막는다: (분류,기기번호)별로 모든 날짜의
+       수량을 먼저 합산한 뒤 그 합계 전체를 최초 입력일이 속한 구간 한 곳에만 넣는다.
+       기기번호가 없는 항목은 개별 식별이 안 되므로 등장한 날짜 그대로 각각 합산한다. */
     var catToday={}, catBefore={};
+    function addTo(isToday, cat, q){
+      var target=isToday?catToday:catBefore;
+      target[cat]=(target[cat]||0)+q;
+    }
+    var byKey={};
+    reportsRes.data.forEach(function(row){
+      (row.items||[]).forEach(function(it){
+        if(!it || !it.cat || it.menu!=='시공' || !it.tag) return;
+        var key=it.cat+'|'+it.tag;
+        if(!byKey[key]) byKey[key]={cat:it.cat, qty:0, firstDate:row.date};
+        var g=byKey[key];
+        g.qty += (Number(it.qty)||0)*connectionQtyWeight(it.cat, it.spec);
+        if(row.date<g.firstDate) g.firstDate=row.date;
+      });
+    });
+    Object.keys(byKey).forEach(function(key){
+      var g=byKey[key];
+      var isToday=g.firstDate===todayStr, isBefore=g.firstDate<todayStr;
+      if(isToday || isBefore) addTo(isToday, g.cat, g.qty);
+    });
     reportsRes.data.forEach(function(row){
       var isToday=row.date===todayStr, isBefore=row.date<todayStr;
       if(!isToday && !isBefore) return;
       (row.items||[]).forEach(function(it){
-        if(!it || !it.cat || it.menu!=='시공') return;
-        var w=connectionQtyWeight(it.cat, it.spec);
-        var q=(Number(it.qty)||0)*w;
-        var target=isToday?catToday:catBefore;
-        target[it.cat]=(target[it.cat]||0)+q;
+        if(!it || !it.cat || it.menu!=='시공' || it.tag) return; // 기기번호 있는 건 위에서 처리
+        addTo(isToday, it.cat, (Number(it.qty)||0)*connectionQtyWeight(it.cat, it.spec));
       });
     });
     catList.forEach(function(cat){ if(!(cat in catToday)) catToday[cat]=0; if(!(cat in catBefore)) catBefore[cat]=0; });
@@ -455,6 +479,12 @@ let activeCheckSub='qty';
 let filteredCheck=[];
 let vsStart=0, vsEnd=0, scrollRaf=null;
 let editingRi=-1, skipSave=false, editMode=false, procEditMode=false;
+/* CHECK LIST는 Supabase progress_checklist(작업일보가 daily_reports에서 자동 생성)를 그대로
+   보여준다 — 작업일보 관리자 화면의 Check List와 같은 원천이다(2026-08-10).
+   예전엔 이 브라우저 IndexedDB에 수기로 입력한 값만 보여줘서, 다른 PC에서 열면 빈 화면이고
+   작업일보 실적과도 무관했다. 그 수기 데이터는 지우지 않고 localCheckQtyData에 그대로 두며
+   저장도 계속 그쪽으로 한다 — 서버 동기화가 실패하면 예전처럼 그 값이 화면에 나온다. */
+let checkSynced=false, localCheckQtyData=[];
 // workData: [{work, unit, plan, prev, today, note}]
 let workData=[];
 
@@ -488,7 +518,8 @@ async function initApp(){
 
   // migrate old 'checkData' key → checkData1
   const rawQty=sc1!==undefined?sc1:(sc||[]);
-  checkQtyData=rawQty.map(r=>({tagNo:r.tagNo||'',qty:r.qty||{},note:r.note||''}));
+  localCheckQtyData=rawQty.map(r=>({tagNo:r.tagNo||'',qty:r.qty||{},note:r.note||''}));
+  checkQtyData=localCheckQtyData;
   checkVolData=(scv||[]).map(r=>({tagNo:r.tagNo||'',qty:r.qty||{},note:r.note||''}));
 
   const today=new Date().toISOString().slice(0,10);
@@ -503,6 +534,7 @@ async function initApp(){
   calcAll();
   checkData=checkQtyData;
   initCheckSheet();
+  loadChecklistFromSupabase(); // 실패하면 방금 불러온 로컬(수기) 값이 그대로 남는다
 
   loadReportProgressData(); // 실패하면 방금 불러온 로컬(procData) 상태로 자동 대체됨
 }
@@ -517,7 +549,8 @@ async function saveData(){
     dbSet('todayDate',document.getElementById('today-date').value),
     dbSet('volPrevDate',document.getElementById('vol-prev-date').value),
     dbSet('volTodayDate',document.getElementById('vol-today-date').value),
-    dbSet('checkData1',checkQtyData),dbSet('checkVolData',checkVolData),
+    // 서버에서 받아온 목록은 저장하지 않는다 — 저장 대상은 항상 수기로 입력했던 원본이다.
+    dbSet('checkData1',localCheckQtyData),dbSet('checkVolData',checkVolData),
   ]);
   if(editMode) toggleEditMode();
   showToast('✓ 저장 완료');
@@ -790,13 +823,58 @@ function setWrapHeight(){
 }
 window.addEventListener('resize',()=>{if(!document.getElementById('page-check').classList.contains('hidden'))setWrapHeight();});
 
-function getCheckCols(){ return PROC_ITEMS; }
+/* 가로축(작업분류) — 작업일보와 동기화됐으면 실제 데이터에 있는 cat에서 뽑는다.
+   관리자 화면 Check List와 같은 방식이라, 일보에서 분류를 추가/이름변경해도 따라간다.
+   PROC_ITEMS(코드에 박힌 20개)는 서버를 못 읽었을 때의 기본 열로만 남긴다. */
+let syncedCheckCols=[];
+function getCheckCols(){
+  if(checkSynced && syncedCheckCols.length) return syncedCheckCols;
+  return PROC_ITEMS;
+}
+
+/* progress_checklist를 읽어 TAG NO.×작업분류 표로 만든다. 셀 값은 완료일자(complete_date)만
+   — 작업일보 관리자 화면의 Check List와 같다. 완료 전(진행만 올라온) 기기는 행은 생기지만
+   그 칸은 비어 있다. 실패하면 checkSynced=false로 두어 예전 수기 데이터를 그대로 보여준다. */
+async function loadChecklistFromSupabase(){
+  const note=document.getElementById('ck-sync-note');
+  if(!sbClient){ if(note) note.textContent='⚠️ 서버에 연결하지 못해 이 브라우저에 저장된 예전 값을 보여줍니다.'; return false; }
+  try{
+    const res=await sbClient.from('progress_checklist').select('tag,cat,complete_date').order('tag');
+    if(res.error||!res.data) throw new Error(res.error?res.error.message:'no data');
+    const byTag={}, catSeen={};
+    res.data.forEach(r=>{
+      if(!r.tag) return;
+      if(!byTag[r.tag]) byTag[r.tag]={tagNo:r.tag, qty:{}, note:''};
+      if(r.cat){
+        catSeen[r.cat]=1;
+        if(r.complete_date) byTag[r.tag].qty[r.cat]=String(r.complete_date).slice(0,10);
+      }
+    });
+    // 열 순서는 PROC_ITEMS 순서를 먼저 따르고, 거기 없는 분류는 뒤에 이름순으로 붙인다.
+    const known=PROC_ITEMS.filter(p=>catSeen[p.item]);
+    const extra=Object.keys(catSeen).filter(c=>!PROC_ITEMS.some(p=>p.item===c)).sort()
+      .map(c=>({item:c, unit:''}));
+    syncedCheckCols=known.concat(extra);
+    checkQtyData=Object.keys(byTag).sort().map(t=>byTag[t]);
+    checkSynced=true;
+    if(activeCheckSub==='qty') checkData=checkQtyData;
+    if(note) note.textContent=`✓ 작업일보와 동기화됨 — TAG ${checkQtyData.length.toLocaleString()}건, 셀은 완료일자입니다 (조회 전용)`;
+    rebuildFilterSelect(); buildCsHeader(); applyFilter();
+    return true;
+  }catch(e){
+    console.error('Check List 동기화 실패', e);
+    checkSynced=false;
+    if(note) note.textContent='⚠️ 작업일보 Check List를 불러오지 못해 이 브라우저에 저장된 예전 값을 보여줍니다.';
+    return false;
+  }
+}
 
 function switchCheckSub(sub){
   activeCheckSub=sub;
   checkData=sub==='qty'?checkQtyData:checkVolData;
-  document.getElementById('ck-sbtn-qty').classList.toggle('on',sub==='qty');
-  document.getElementById('ck-sbtn-vol').classList.toggle('on',sub==='vol');
+  var bq=document.getElementById('ck-sbtn-qty'), bv=document.getElementById('ck-sbtn-vol');
+  if(bq) bq.classList.toggle('on',sub==='qty');
+  if(bv) bv.classList.toggle('on',sub==='vol');
   rebuildFilterSelect();
   buildCsHeader();
   applyFilter();
@@ -876,10 +954,13 @@ function renderRows(start,end){
     return`<div class="cs-row">
       ${tagCell}
       ${cols.map(p=>renderCell(ri,p.item)).join('')}
-      <div class="cs-col-note"><input class="cs-note-inp" value="${escHtml(row.note||'')}" placeholder="비고" onchange="checkData[${ri}].note=this.value"></div>
-      <div class="cs-col-del">
+      <div class="cs-col-note">${checkSynced
+        ? `<span class="cs-qty-txt" style="font-size:11px">${escHtml(row.note||'')}</span>`
+        : `<input class="cs-note-inp" value="${escHtml(row.note||'')}" placeholder="비고" onchange="checkData[${ri}].note=this.value">`}</div>
+      <!-- 작업일보에서 받아온 목록은 TAG를 여기서 고치거나 지울 수 없다(서버에 안 올라간다). -->
+      <div class="cs-col-del">${checkSynced ? '' : `
         <button class="cs-edit-btn" onclick="startEditTag(${ri})" title="수정"><i class="ti ti-pencil"></i></button>
-        <button class="cs-del-btn" onclick="deleteTagRow(${ri})" title="삭제"><i class="ti ti-trash"></i></button>
+        <button class="cs-del-btn" onclick="deleteTagRow(${ri})" title="삭제"><i class="ti ti-trash"></i></button>`}
       </div>
     </div>`;
   }).join('');
@@ -892,7 +973,9 @@ function renderCell(ri,item){
   if(isQty){
     const dateStr=parseExcelDate(String(rawVal||'').trim());
     const hasVal=dateStr.length>0;
-    if(!editMode){
+    // 작업일보에서 받아온 목록은 여기서 고치지 않는다(고쳐봐야 서버에 안 올라가고
+    // 다음 새로고침에 사라진다) — 관리자 화면 Check List와 같은 조회 전용이다.
+    if(!editMode || checkSynced){
       if(hasVal)return`<div class="cs-col-item has-val" ${S}><span class="cs-qty-txt" style="font-size:11px">${dateStr.slice(0,10)}</span></div>`;
       return`<div class="cs-col-item" ${S}></div>`;
     }
@@ -917,6 +1000,8 @@ function setQty(ri,item,val){
 }
 
 function addTagRow(){
+  // 작업일보에서 받아온 목록은 여기서 바꾸지 않는다 — 서버(progress_checklist)가 원본이다.
+  if(checkSynced){ showToast('작업일보와 동기화된 목록이라 여기서 편집할 수 없습니다'); return; }
   const inp=document.getElementById('cs-new-tag');
   const tag=inp.value.trim().toUpperCase();
   if(!tag){showToast('TAG NO.를 입력하세요');return;}
@@ -931,6 +1016,8 @@ function addTagRow(){
 }
 
 function deleteTagRow(ri){
+  // 작업일보에서 받아온 목록은 여기서 바꾸지 않는다 — 서버(progress_checklist)가 원본이다.
+  if(checkSynced){ showToast('작업일보와 동기화된 목록이라 여기서 편집할 수 없습니다'); return; }
   if(!confirm(`[${checkData[ri].tagNo}] 삭제하시겠습니까?`))return;
   checkData.splice(ri,1);applyFilter();syncCheckToProc(true);
 }
@@ -962,6 +1049,8 @@ function toggleEditMode(){
 
 // Check List CSV
 function handleCheckCSV(input){
+  // 작업일보에서 받아온 목록은 여기서 바꾸지 않는다 — 서버(progress_checklist)가 원본이다.
+  if(checkSynced){ showToast('작업일보와 동기화된 목록이라 여기서 편집할 수 없습니다'); return; }
   const f=input.files[0];if(!f)return;
   showToast('업로드 처리 중...');
   const r=new FileReader();
