@@ -55,6 +55,9 @@
     html.embed body{background:transparent;}
     html.embed header{display:none;}
     html.embed .tab-bar{top:0;}
+    /* 공정률/CHECK LIST 전환은 바깥 앱의 탭이 대신하므로 자체 탭 버튼은 감춘다.
+       같은 줄의 CSV·새로고침 같은 동작 버튼들은 그대로 둔다. */
+    html.embed .tab-nav{display:none;}
     html.embed .page{padding:12px 14px 16px;}
 
     /* Pages */
@@ -1322,6 +1325,13 @@ function dl(name,content){
 }
 
 initApp();
+
+/* 바깥 앱(인원투입계획/실투입)이 공정률/CHECK LIST를 각각 자기 탭으로 두고 ?tab= 으로
+   어느 쪽을 열지 알려준다. 탭을 바꿀 때는 부모가 showTab()을 직접 호출한다(같은 도메인). */
+(function(){
+  var m=/[?&]tab=(\w+)/.exec(location.search);
+  if(m && (m[1]==='proc' || m[1]==='check')) showTab(m[1]);
+})();
 </script>
 
 <!-- 앱 공용 이동 버튼(목록은 로그인한 사람의 등급으로 걸러진다). 파일은 report 저장소에
