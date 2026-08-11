@@ -218,7 +218,6 @@
   <!-- 공정률은 작업물량(입력 수량) 하나로만 본다(2026-08-10, 사용자 확정) — CHECK LIST와 같이
        서브탭 없이 한 화면이다. 수기로 계획을 넣던 옛 "작업물량" 표(proc-sub-vol)는 삭제했다.
        여기 표가 작업일보 관리자 화면의 공정률과 같은 규칙으로 집계된 그 물량이다. -->
-  <div style="font-size:12px;color:var(--tx2);margin-bottom:10px;">작업물량 기준 — 작업일보 관리자 화면과 같은 집계입니다.</div>
   <div id="proc-sub-qty">
     <div class="ctrl" id="qty-legacy-ctrl" style="display:none">
       <span class="ctrl-lbl">전일 기준일</span>
@@ -230,7 +229,7 @@
       <div class="import-status" id="import-status"><i class="ti ti-circle-x"></i> 일보 미연동</div>
     </div>
     <div class="ctrl" id="qty-sync-ctrl">
-      <div class="import-status" id="sync-status"><i class="ti ti-loader-2"></i> 관리자화면과 동기화하는 중...</div>
+      <div class="import-status" id="sync-status" style="display:none"></div>
       <div class="flex1"></div>
       <button class="btn btn-sm" id="syncRefreshBtn" onclick="loadReportProgressData()"><i class="ti ti-refresh"></i> 새로고침</button>
     </div>
@@ -459,12 +458,14 @@ async function loadReportProgressData(){
     if(btn) btn.classList.remove('spin');
   }
 }
+/* 정상 동기화는 굳이 알릴 필요가 없어 문구를 감춘다(2026-08-11 사용자 요청).
+   실패했을 때만 띄운다 — 이게 없으면 옛 오프라인 값을 최신인 줄 알고 보게 된다. */
 function updateSyncStatus(){
   var el=document.getElementById('sync-status');
   if(!el) return;
-  el.innerHTML=reportSynced
-    ? '<i class="ti ti-circle-check" style="color:#3B6D11"></i> 관리자화면과 동기화됨 · '+syncedAt.toLocaleTimeString('ko-KR')
-    : '<i class="ti ti-circle-x"></i> 동기화 실패 — 오프라인 값을 표시 중';
+  if(reportSynced){ el.innerHTML=''; el.style.display='none'; return; }
+  el.style.display='';
+  el.innerHTML='<i class="ti ti-circle-x"></i> 동기화 실패 — 오프라인 값을 표시 중';
 }
 
 let procData=[], procVolData=[], importedReports=[], lastImport=null;
