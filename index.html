@@ -20,7 +20,7 @@
 
     /* Header — 작업일보(report) 앱과 같은 진한 남색 그라디언트로 통일, 글자색은 어두운 배경에 맞춰 조정 */
     header{background:linear-gradient(135deg,var(--hdr-1),var(--hdr-2));border-bottom:none;padding:0 16px;position:sticky;top:0;z-index:200;}
-    .hdr{display:flex;align-items:center;gap:8px;height:48px;max-width:1400px;margin:0 auto;color:#fff;}
+    .hdr{display:flex;align-items:center;gap:8px;height:48px;width:100%;color:#fff;}
     .hdr-title{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;}
     .hdr-title img{width:28px;height:28px;border-radius:6px;}
     .hdr-title small{font-size:11px;color:rgba(255,255,255,0.65);font-weight:400;margin-left:6px;}
@@ -30,7 +30,7 @@
     header .btn-primary{box-shadow:0 0 0 1px rgba(255,255,255,0.35);}
 
     /* 탭바 — 헤더(남색)와 분리된 두 번째 행. 탭/버튼이 많아 한 줄에 다 안 들어가던 문제를 해결 */
-    .tab-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:1400px;margin:0 auto;padding:8px 16px;background:var(--sf);border-bottom:1px solid var(--bd);position:sticky;top:48px;z-index:190;}
+    .tab-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%;padding:8px 16px;background:var(--sf);border-bottom:1px solid var(--bd);position:sticky;top:48px;z-index:190;}
     .tab-nav{display:flex;gap:2px;}
     .tab-btn{padding:5px 14px;border-radius:var(--r);border:1px solid var(--bd);background:var(--bg);color:var(--tx2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;}
     .tab-btn:hover{border-color:var(--ac);color:var(--tx);}
@@ -48,7 +48,8 @@
     .file-inp{display:none;}
 
     /* Pages */
-    .page{max-width:1400px;margin:0 auto;padding:16px;}
+    /* PC 전용 화면 — 가로 폭 제한 없이 모니터 전체를 쓴다 (기존 1400px 상한 제거) */
+    .page{width:100%;padding:16px;}
     .page.hidden{display:none;}
 
     /* Controls */
