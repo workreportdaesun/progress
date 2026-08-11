@@ -79,7 +79,7 @@
     @keyframes spin{to{transform:rotate(360deg);}}
 
     /* Proc table */
-    .tbl-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:16px;overflow-x:auto;}
+    .tbl-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:8px;margin-bottom:16px;overflow:auto;}
     table{width:100%;border-collapse:collapse;table-layout:fixed;}
     td,th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     thead th{background:var(--head-bg);color:var(--tx);font-size:12px;font-weight:700;padding:8px 10px;text-align:center;border-bottom:1px solid var(--bd);white-space:nowrap;}
@@ -584,6 +584,7 @@ function showTab(tab){
   // 높이는 cs-wrap의 화면상 위치를 재서 정하므로, 먼저 맨 위로 올린 뒤에 계산한다.
   window.scrollTo({top:0,behavior:'instant'});
   if(tab==='check') setWrapHeight();
+  if(tab==='proc') setProcWrapHeight();
 }
 
 // ── Process Rate ──────────────────────────────────────────
@@ -664,6 +665,7 @@ function procActual(d){
   return d.hasInstall ? (d.install||0) : (d.prev+d.today);
 }
 function renderTable(){
+  setTimeout(setProcWrapHeight,0);   // 다시 그린 뒤 위쪽 요소 높이가 바뀌었을 수 있다
   const editable=procEditMode&&!reportSynced;
   document.getElementById('proc-tbody').innerHTML=procData.map((d,i)=>{
     const cum=d.prev+d.today;
@@ -837,6 +839,16 @@ function exportVolCSV(){
 /* 표를 화면 아래 끝까지 채운다. 예전엔 위쪽 요소 높이를 320px로 어림잡아 빼서 아래에 빈 공간이
    남았는데, 이제 cs-wrap의 실제 위치를 재서 계산하므로 헤더·탭바·툴바·필터바 높이가 바뀌어도
    (필터바가 줄바꿈되는 등) 항상 바닥에 딱 맞는다. 아래는 .page의 여백 16px만 남긴다. */
+/* 공정률 표도 화면 아래 끝까지 채운다(2026-08-11) — CHECK LIST(setWrapHeight)와 같은 방식. */
+function setProcWrapHeight(){
+  var page=document.getElementById('page-proc');
+  if(!page || page.classList.contains('hidden')) return;
+  var wrap=page.querySelector('.tbl-wrap');
+  if(!wrap) return;
+  var top=wrap.getBoundingClientRect().top+(window.scrollY||0);
+  wrap.style.height=Math.max(200, Math.floor(window.innerHeight-top-24))+'px';
+}
+window.addEventListener('resize', setProcWrapHeight);
 function setWrapHeight(){
   const wrap=document.getElementById('cs-wrap');
   const page=document.getElementById('page-check');
