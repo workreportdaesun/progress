@@ -60,7 +60,7 @@
     /* 공정률/CHECK LIST 전환은 바깥 앱의 탭이 대신하므로 자체 탭 버튼은 감춘다.
        같은 줄의 CSV·새로고침 같은 동작 버튼들은 그대로 둔다. */
     html.embed .tab-nav{display:none;}
-    html.embed .page{padding:12px 14px 16px;}
+    html.embed .page{padding:0;}   /* 바깥 카드가 이미 여백을 준다 */
 
     /* Pages */
     /* PC 전용 화면 — 가로 폭 제한 없이 모니터 전체를 쓴다 (기존 1400px 상한 제거) */
@@ -68,17 +68,18 @@
     .page.hidden{display:none;}
 
     /* Controls */
-    .ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:9px 12px;}
+    /* 컨트롤 줄은 상자 없이 나열한다 — 인원투입계획/실투입 앱의 .toolbar와 같은 모양(2026-08-11) */
+    .ctrl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
     .ctrl-sep{width:1px;height:18px;background:var(--bd);margin:0 2px;}
-    .ctrl-lbl{font-size:11px;color:var(--tx2);white-space:nowrap;}
-    .date-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:4px 8px;font-family:inherit;}
+    .ctrl-lbl{font-size:12px;font-weight:700;color:var(--tx2);white-space:nowrap;}
+    .date-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;}
     .date-inp:focus{outline:none;border-color:var(--ac2);}
     .import-status{font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:4px;}
     #syncRefreshBtn.spin i{display:inline-block;animation:spin .8s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
 
     /* Proc table */
-    .tbl-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:16px;overflow-x:auto;}
+    .tbl-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:16px;overflow-x:auto;}
     table{width:100%;border-collapse:collapse;table-layout:fixed;}
     td,th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     thead th{background:var(--head-bg);color:var(--tx);font-size:12px;font-weight:700;padding:8px 10px;text-align:center;border-bottom:1px solid var(--bd);white-space:nowrap;}
@@ -107,16 +108,16 @@
 
     /* Check List */
     /* 상단 컨트롤 줄 — 공정률 탭의 .ctrl과 같은 상자 서식(2026-08-11 통일) */
-    .cs-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:9px 12px;}
-    .cs-search{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:5px 10px;font-family:inherit;width:200px;}
+    .cs-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+    .cs-search{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;width:200px;}
     .cs-search:focus{outline:none;border-color:var(--ac2);}
-    .cs-tag-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:5px 10px;font-family:inherit;width:160px;}
+    .cs-tag-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;width:160px;}
     .cs-tag-inp:focus{outline:none;border-color:var(--ac2);}
-    .cs-select{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:4px 8px;font-family:inherit;cursor:pointer;max-width:160px;}
+    .cs-select{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;cursor:pointer;max-width:160px;}
     .cs-select:focus{outline:none;border-color:var(--ac2);}
 
     /* Virtual scroll */
-    .cs-wrap{border:1px solid var(--bd);border-radius:var(--r);overflow:auto;background:var(--sf);position:relative;}
+    .cs-wrap{border:1px solid var(--bd);border-radius:8px;overflow:auto;background:var(--sf);position:relative;}
     .cs-hdr{display:flex;position:sticky;top:0;z-index:20;background:var(--head-bg);border-bottom:2px solid var(--bd);min-width:max-content;}
     /* 열 이름은 작업일보 설정에서 오므로 ABBR에 없는 긴 이름이 들어올 수 있다 — 칸을 넘치지 않게 자른다(전체 이름은 title 툴팁). */
     .cs-hdr-cell{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--tx);padding:6px 4px;border-right:1px solid var(--bd2);height:36px;white-space:nowrap;overflow:hidden;}
