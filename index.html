@@ -16,7 +16,7 @@
   <style>
     /* 예전 다크테마로 복귀. 헤더는 --hdr-1/--hdr-2 별도 변수로 고정해서 작업일보(report)와 같은
        남색 그라디언트를 그대로 유지 — 나머지 화면만 다크테마로 되돌림 */
-    :root{--bg:#DFE4EA;--sf:#ffffff;--sf2:#F7FAFC;--bd:#D1DCE8;--bd2:#E6EDF5;--tx:#1A2332;--tx2:#5A7A9A;--ac:#2E5F9E;--ac2:#1E3A5F;--ok:#1B7A43;--ok-bg:#EAF6EF;--err:#C0392B;--err-bg:#FDEDEC;--hdr-1:#1E3A5F;--hdr-2:#2E5F9E;--r:6px;}
+    :root{--bg:#F0F4F8;--sf:#ffffff;--sf2:#F7FAFC;--bd:#D1DCE8;--bd2:#E6EDF5;--tx:#1A2332;--tx2:#5A7A9A;--head-bg:#DCE6F2;--fbd:#C8D8E8;--ac:#2E5F9E;--ac2:#1E3A5F;--ok:#1B7A43;--ok-bg:#EAF6EF;--err:#C0392B;--err-bg:#FDEDEC;--hdr-1:#1E3A5F;--hdr-2:#2E5F9E;--r:6px;}
     *{box-sizing:border-box;margin:0;padding:0;}
     html{overflow-y:scroll;}
     body{background:var(--bg);color:var(--tx);font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:13px;min-height:100vh;}
@@ -41,7 +41,8 @@
     .hdr-sep{width:1px;height:22px;background:var(--bd);}
 
     /* Buttons */
-    .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:var(--r);border:1px solid var(--bd);background:var(--sf2);color:var(--tx);font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap;}
+    /* 버튼 서식은 인원투입계획/실투입 앱의 .btn.sm.ghost와 동일하게 맞춤(2026-08-11 통일) */
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;border:1px solid var(--fbd);background:var(--sf2);color:var(--ac);font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap;}
     .btn:hover{background:var(--bd2);}
     .btn-primary{background:var(--ac);border-color:var(--ac);color:#fff;}
     .btn-primary:hover{background:var(--ac2);border-color:var(--ac2);}
@@ -79,7 +80,7 @@
     .tbl-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:16px;overflow-x:auto;}
     table{width:100%;border-collapse:collapse;table-layout:fixed;}
     td,th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-    thead th{background:var(--sf2);color:var(--tx2);font-size:11px;font-weight:600;padding:8px 10px;text-align:center;border-bottom:1px solid var(--bd);white-space:nowrap;}
+    thead th{background:var(--head-bg);color:var(--tx);font-size:12px;font-weight:700;padding:8px 10px;text-align:center;border-bottom:1px solid var(--bd);white-space:nowrap;}
     thead th.lft{text-align:left;}
     tbody tr{border-bottom:1px solid var(--bd2);transition:background .1s;}
     tbody tr:last-child{border-bottom:none;}
@@ -87,7 +88,7 @@
     td{padding:7px 10px;font-size:12px;text-align:center;vertical-align:middle;}
     td.lft{text-align:left;font-weight:500;}
     td.unit{color:var(--tx2);font-size:11px;}
-    tfoot td{background:var(--sf2);font-weight:600;font-size:12px;border-top:1px solid var(--bd);padding:8px 10px;text-align:center;}
+    tfoot td{background:var(--head-bg);font-weight:700;font-size:12px;border-top:1px solid var(--bd);padding:8px 10px;text-align:center;}
     input[type=number]{appearance:textfield;-moz-appearance:textfield;}
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
