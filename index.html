@@ -556,8 +556,9 @@ function showTab(tab){
   ['proc','check'].forEach(t=>document.getElementById('tbtn-'+t).classList.toggle('on',t===tab));
   document.getElementById('hdr-proc').style.display=tab==='proc'?'flex':'none';
   document.getElementById('hdr-check').style.display=tab==='check'?'flex':'none';
-  if(tab==='check') setWrapHeight();
+  // 높이는 cs-wrap의 화면상 위치를 재서 정하므로, 먼저 맨 위로 올린 뒤에 계산한다.
   window.scrollTo({top:0,behavior:'instant'});
+  if(tab==='check') setWrapHeight();
 }
 
 // ── Process Rate ──────────────────────────────────────────
@@ -808,10 +809,18 @@ function exportVolCSV(){
 }
 
 // ── Check List ─────────────────────────────────────────────
+/* 표를 화면 아래 끝까지 채운다. 예전엔 위쪽 요소 높이를 320px로 어림잡아 빼서 아래에 빈 공간이
+   남았는데, 이제 cs-wrap의 실제 위치를 재서 계산하므로 헤더·탭바·툴바·필터바 높이가 바뀌어도
+   (필터바가 줄바꿈되는 등) 항상 바닥에 딱 맞는다. 아래는 .page의 여백 16px만 남긴다. */
 function setWrapHeight(){
-  document.getElementById('cs-wrap').style.height=Math.max(300,window.innerHeight-320)+'px';
+  const wrap=document.getElementById('cs-wrap');
+  const page=document.getElementById('page-check');
+  if(!wrap||!page||page.classList.contains('hidden')) return;   // 숨겨져 있으면 위치를 못 잰다
+  const top=wrap.getBoundingClientRect().top+(window.scrollY||document.documentElement.scrollTop||0);
+  wrap.style.height=Math.max(300,window.innerHeight-top-16)+'px';
+  vsRender(wrap);   // 늘어난 높이만큼 행을 더 그린다
 }
-window.addEventListener('resize',()=>{if(!document.getElementById('page-check').classList.contains('hidden'))setWrapHeight();});
+window.addEventListener('resize',setWrapHeight);
 
 /* 가로축(작업분류) — 작업일보 ⚙️작업분류 설정(app_settings.cats_by_menu['시공'])을 그대로 쓴다.
    report/app/admin.html의 renderChecklist()와 같은 규칙(2026-08-11):
@@ -864,6 +873,7 @@ function rebuildCheckCols(){
   Object.keys(checkCatSeen).sort().forEach(function(c){ if(!seen[c]){ seen[c]=true; cats.push(c); } });
   syncedCheckCols=cats.map(function(c){ return {item:c, unit:settingsItemUnit[c]||''}; });
   rebuildFilterSelect(); buildCsHeader(); applyFilter();
+  setWrapHeight();   // 동기화 안내문·필터바 높이가 바뀌었을 수 있으니 다시 바닥에 맞춘다
 }
 function getCheckCols(){
   if(checkSynced && syncedCheckCols.length) return syncedCheckCols;
