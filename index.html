@@ -103,7 +103,8 @@
     /* Virtual scroll */
     .cs-wrap{border:1px solid var(--bd);border-radius:var(--r);overflow:auto;background:var(--sf);position:relative;}
     .cs-hdr{display:flex;position:sticky;top:0;z-index:20;background:var(--sf2);border-bottom:2px solid var(--bd);min-width:max-content;}
-    .cs-hdr-cell{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--tx2);padding:6px 4px;border-right:1px solid var(--bd2);height:36px;}
+    /* 열 이름은 작업일보 설정에서 오므로 ABBR에 없는 긴 이름이 들어올 수 있다 — 칸을 넘치지 않게 자른다(전체 이름은 title 툴팁). */
+    .cs-hdr-cell{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--tx2);padding:6px 4px;border-right:1px solid var(--bd2);height:36px;white-space:nowrap;overflow:hidden;}
     .cs-hdr-cell.lft{justify-content:flex-start;padding-left:8px;}
     .cs-virtual{position:relative;}
     .cs-row{display:flex;align-items:center;border-bottom:1px solid var(--bd2);min-width:max-content;height:36px;}
@@ -510,6 +511,10 @@ async function initApp(){
   calcAll();
   checkData=checkQtyData;
   initCheckSheet();
+  // 체크리스트 열(작업분류)의 기준이므로 작업일보 ⚙️설정을 먼저 받아온다. 실패해도 아래는 진행 —
+  // 그 경우 열은 progress_checklist에 실제로 있는 분류만으로 만들어진다.
+  await loadCatSettings();
+  subscribeSettingsRealtime();
   loadChecklistFromSupabase(); // 실패하면 방금 불러온 로컬(수기) 값이 그대로 남는다
 
   loadReportProgressData(); // 실패하면 방금 불러온 로컬(procData) 상태로 자동 대체됨
@@ -808,10 +813,58 @@ function setWrapHeight(){
 }
 window.addEventListener('resize',()=>{if(!document.getElementById('page-check').classList.contains('hidden'))setWrapHeight();});
 
-/* 가로축(작업분류) — 작업일보와 동기화됐으면 실제 데이터에 있는 cat에서 뽑는다.
-   관리자 화면 Check List와 같은 방식이라, 일보에서 분류를 추가/이름변경해도 따라간다.
+/* 가로축(작업분류) — 작업일보 ⚙️작업분류 설정(app_settings.cats_by_menu['시공'])을 그대로 쓴다.
+   report/app/admin.html의 renderChecklist()와 같은 규칙(2026-08-11):
+     1) 설정에 있는 시공 분류를 설정 순서 그대로 전부 열로 만든다 — 아직 실적이 없어도 열은 보인다.
+        (예전엔 progress_checklist에 실적이 있는 분류만 열로 만들어서, 일보에서 새로 추가한 분류가
+         여기선 아예 안 보였고 열 순서도 코드에 박힌 PROC_ITEMS 순서라 일보와 달랐다.)
+     2) 설정에서 이미 지워졌지만 과거 데이터가 남은 분류는 뒤에 이어붙여 숨기지 않는다.
+     3) 단위는 app_settings.item_unit(일보 ⚙️수량 단위 관리)에서 읽는다 — 코드에 박힌 PROC_ITEMS의
+        단위와 일보 설정이 어긋나던 항목들(DCS PANEL·CABLE TRAY·SCAFFOLDING 등)이 이걸로 정리된다.
    PROC_ITEMS(코드에 박힌 20개)는 서버를 못 읽었을 때의 기본 열로만 남긴다. */
-let syncedCheckCols=[];
+var settingsCatList=[], settingsItemUnit={};
+function sikongCatsFrom(catsByMenu){
+  var seen={}, list=[];
+  ((catsByMenu||{})['시공']||[]).forEach(function(cat){
+    if(seen[cat]) return;
+    seen[cat]=true; list.push(cat);
+  });
+  return list;
+}
+async function loadCatSettings(){
+  if(!sbClient) return false;
+  try{
+    var res=await sbClient.from('app_settings').select('cats_by_menu,item_unit').eq('id','global').single();
+    settingsItemUnit=(res.data && res.data.item_unit) || {};
+    settingsCatList=sikongCatsFrom(res.data && res.data.cats_by_menu);
+    return settingsCatList.length>0;
+  }catch(e){ console.error('작업분류 목록 불러오기 실패', e); return false; }
+}
+/* 작업일보에서 분류를 추가/이름변경/순서변경하거나 단위를 바꾸면 새로고침 없이 바로 따라간다 —
+   report/app/admin.html의 subscribeAdminSettingsRealtime과 같은 테이블·같은 필터. */
+function subscribeSettingsRealtime(){
+  if(!sbClient || !sbClient.channel) return;
+  sbClient.channel('app_settings_changes_progress')
+    .on('postgres_changes',{event:'*',schema:'public',table:'app_settings',filter:'id=eq.global'},function(payload){
+      if(!payload.new) return;
+      settingsItemUnit=payload.new.item_unit || {};
+      settingsCatList=sikongCatsFrom(payload.new.cats_by_menu);
+      rebuildCheckCols();
+    })
+    .subscribe();
+}
+
+let syncedCheckCols=[], checkCatSeen={};
+/* 설정 목록 + 데이터에만 남은 분류를 합쳐 열 정의를 다시 만든다. checkCatSeen은 서버에서 받은
+   progress_checklist 행에 실제로 등장한 시공 분류들(loadChecklistFromSupabase가 채운다). */
+function rebuildCheckCols(){
+  if(!checkSynced) return;
+  var cats=settingsCatList.slice(), seen={};
+  cats.forEach(function(c){ seen[c]=true; });
+  Object.keys(checkCatSeen).sort().forEach(function(c){ if(!seen[c]){ seen[c]=true; cats.push(c); } });
+  syncedCheckCols=cats.map(function(c){ return {item:c, unit:settingsItemUnit[c]||''}; });
+  rebuildFilterSelect(); buildCsHeader(); applyFilter();
+}
 function getCheckCols(){
   if(checkSynced && syncedCheckCols.length) return syncedCheckCols;
   return PROC_ITEMS;
@@ -824,27 +877,27 @@ async function loadChecklistFromSupabase(){
   const note=document.getElementById('ck-sync-note');
   if(!sbClient){ if(note) note.textContent='⚠️ 서버에 연결하지 못해 이 브라우저에 저장된 예전 값을 보여줍니다.'; return false; }
   try{
-    const res=await sbClient.from('progress_checklist').select('tag,cat,complete_date').order('tag');
+    const res=await sbClient.from('progress_checklist').select('tag,cat,menu,complete_date').order('tag');
     if(res.error||!res.data) throw new Error(res.error?res.error.message:'no data');
-    const byTag={}, catSeen={};
+    const byTag={};
+    checkCatSeen={};
     res.data.forEach(r=>{
       if(!r.tag) return;
+      // progress_checklist에는 공종 구분 없이 전부 들어있다 — 시공 행만 쓴다(화기/유도·자재 등의
+      // 분류가 시공용 체크리스트에 섞여 나오던 문제, admin.html이 2026-08-06에 먼저 고친 규칙).
+      if(r.menu!=='시공') return;
       if(!byTag[r.tag]) byTag[r.tag]={tagNo:r.tag, qty:{}, note:''};
       if(r.cat){
-        catSeen[r.cat]=1;
+        checkCatSeen[r.cat]=1;
         if(r.complete_date) byTag[r.tag].qty[r.cat]=String(r.complete_date).slice(0,10);
       }
     });
-    // 열 순서는 PROC_ITEMS 순서를 먼저 따르고, 거기 없는 분류는 뒤에 이름순으로 붙인다.
-    const known=PROC_ITEMS.filter(p=>catSeen[p.item]);
-    const extra=Object.keys(catSeen).filter(c=>!PROC_ITEMS.some(p=>p.item===c)).sort()
-      .map(c=>({item:c, unit:''}));
-    syncedCheckCols=known.concat(extra);
     checkQtyData=Object.keys(byTag).sort().map(t=>byTag[t]);
     checkSynced=true;
     if(activeCheckSub==='qty') checkData=checkQtyData;
     if(note) note.textContent=`✓ 작업일보와 동기화됨 — TAG ${checkQtyData.length.toLocaleString()}건, 셀은 완료일자입니다 (조회 전용)`;
-    rebuildFilterSelect(); buildCsHeader(); applyFilter();
+    // 열(작업분류)은 작업일보 ⚙️설정 순서 그대로 + 데이터에만 남은 분류를 뒤에 붙여 만든다.
+    rebuildCheckCols();
     return true;
   }catch(e){
     console.error('Check List 동기화 실패', e);
@@ -871,7 +924,8 @@ function rebuildFilterSelect(){
   getCheckCols().forEach(p=>{
     const opt=document.createElement('option');
     opt.value=p.item;
-    opt.textContent=`${ABBR[p.item]||p.item} (${p.unit})`;
+    // 단위는 작업일보 설정값(item_unit)이라 비어 있을 수 있다 — 그땐 괄호를 안 붙인다.
+    opt.textContent=p.unit?`${ABBR[p.item]||p.item} (${p.unit})`:(ABBR[p.item]||p.item);
     sel.appendChild(opt);
   });
 }
@@ -890,7 +944,7 @@ function buildCsHeader(){
   const cols=getCheckCols();
   document.getElementById('cs-hdr').innerHTML=
     `<div class="cs-hdr-cell cs-col-tag lft">TAG NO.</div>`+
-    cols.map(p=>`<div class="cs-hdr-cell" style="width:${W_ITEM}px;min-width:${W_ITEM}px" title="${p.item} (${p.unit})">${ABBR[p.item]||p.item}</div>`).join('')+
+    cols.map(p=>`<div class="cs-hdr-cell" style="width:${W_ITEM}px;min-width:${W_ITEM}px" title="${p.item}${p.unit?' ('+p.unit+')':''}">${ABBR[p.item]||p.item}</div>`).join('')+
     `<div class="cs-hdr-cell" style="width:${W_NOTE}px;min-width:${W_NOTE}px">비고</div>`+
     `<div class="cs-hdr-cell" style="width:${W_DEL}px;min-width:${W_DEL}px"></div>`;
 }
