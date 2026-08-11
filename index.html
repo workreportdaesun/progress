@@ -10,10 +10,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <!-- 공정관리는 현장관리자 이상. 작업자(worker)는 출퇴근체크로 돌려보낸다. -->
 <script src="/report/role-gate.js" data-require="manager"></script>
+<!-- ?embed=1 이면 다른 앱(인원투입계획/실투입) 탭 안의 iframe이다 — 자기 헤더·PIN·플로팅
+     이동 버튼을 띄우지 않는다. 주소로 직접 열면 지금까지와 똑같이 동작한다. -->
+<script>if(/[?&]embed=1/.test(location.search)) document.documentElement.classList.add('embed');</script>
   <style>
     /* 예전 다크테마로 복귀. 헤더는 --hdr-1/--hdr-2 별도 변수로 고정해서 작업일보(report)와 같은
        남색 그라디언트를 그대로 유지 — 나머지 화면만 다크테마로 되돌림 */
-    :root{--bg:#0d1117;--sf:#161b22;--sf2:#1c2128;--bd:#30363d;--bd2:#21262d;--tx:#e6edf3;--tx2:#8b949e;--ac:#12b3a8;--hdr-1:#1E3A5F;--hdr-2:#2E5F9E;--r:6px;}
+    :root{--bg:#DFE4EA;--sf:#ffffff;--sf2:#F7FAFC;--bd:#D1DCE8;--bd2:#E6EDF5;--tx:#1A2332;--tx2:#5A7A9A;--ac:#2E5F9E;--ac2:#1E3A5F;--ok:#1B7A43;--ok-bg:#EAF6EF;--err:#C0392B;--err-bg:#FDEDEC;--hdr-1:#1E3A5F;--hdr-2:#2E5F9E;--r:6px;}
     *{box-sizing:border-box;margin:0;padding:0;}
     html{overflow-y:scroll;}
     body{background:var(--bg);color:var(--tx);font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:13px;min-height:100vh;}
@@ -41,11 +44,18 @@
     .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:var(--r);border:1px solid var(--bd);background:var(--sf2);color:var(--tx);font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap;}
     .btn:hover{background:var(--bd2);}
     .btn-primary{background:var(--ac);border-color:var(--ac);color:#fff;}
-    .btn-primary:hover{background:#3ed6c9;border-color:#3ed6c9;}
-    .btn-green{background:#196127;border-color:#196127;color:#fff;}
-    .btn-green:hover{background:#2ea043;}
+    .btn-primary:hover{background:var(--ac2);border-color:var(--ac2);}
+    .btn-green{background:var(--ok);border-color:var(--ok);color:#fff;}
+    .btn-green:hover{background:#15653A;}
     .btn-sm{padding:3px 8px;font-size:11px;}
     .file-inp{display:none;}
+
+    /* 삽입(embed) 모드 — 바깥 앱 탭 안이라 자기 헤더는 빼고, 탭바를 맨 위로 올린다.
+       배경은 투명하게 두어 바깥 카드 색을 그대로 쓴다. */
+    html.embed body{background:transparent;}
+    html.embed header{display:none;}
+    html.embed .tab-bar{top:0;}
+    html.embed .page{padding:12px 14px 16px;}
 
     /* Pages */
     /* PC 전용 화면 — 가로 폭 제한 없이 모니터 전체를 쓴다 (기존 1400px 상한 제거) */
@@ -57,7 +67,7 @@
     .ctrl-sep{width:1px;height:18px;background:var(--bd);margin:0 2px;}
     .ctrl-lbl{font-size:11px;color:var(--tx2);white-space:nowrap;}
     .date-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:4px 8px;font-family:inherit;}
-    .date-inp:focus{outline:none;border-color:#3ed6c9;}
+    .date-inp:focus{outline:none;border-color:var(--ac2);}
     .import-status{font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:4px;}
     #syncRefreshBtn.spin i{display:inline-block;animation:spin .8s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
@@ -79,12 +89,12 @@
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
     .plan-inp{width:72px;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:3px 6px;text-align:right;font-family:inherit;}
-    .plan-inp:focus{outline:none;border-color:#3ed6c9;}
+    .plan-inp:focus{outline:none;border-color:var(--ac2);}
     .plan-inp.locked{background:transparent;border-color:transparent;color:var(--tx2);cursor:default;pointer-events:none;}
     .lock-icon{font-size:10px;color:var(--tx2);cursor:pointer;margin-left:2px;vertical-align:middle;}
     .lock-icon:hover{color:var(--tx);}
     .factor-inp{width:52px;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:3px 6px;text-align:center;font-family:inherit;}
-    .factor-inp:focus{outline:none;border-color:#3ed6c9;}
+    .factor-inp:focus{outline:none;border-color:var(--ac2);}
     .pbar-wrap{display:flex;align-items:center;gap:6px;}
     .pbar{flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden;min-width:36px;}
     .pbar-fill{height:100%;border-radius:3px;transition:width .4s;}
@@ -93,11 +103,11 @@
     /* Check List */
     .cs-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
     .cs-search{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:5px 10px;font-family:inherit;width:200px;}
-    .cs-search:focus{outline:none;border-color:#3ed6c9;}
+    .cs-search:focus{outline:none;border-color:var(--ac2);}
     .cs-tag-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:5px 10px;font-family:inherit;width:160px;}
-    .cs-tag-inp:focus{outline:none;border-color:#3ed6c9;}
+    .cs-tag-inp:focus{outline:none;border-color:var(--ac2);}
     .cs-select{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:4px 8px;font-family:inherit;cursor:pointer;max-width:160px;}
-    .cs-select:focus{outline:none;border-color:#3ed6c9;}
+    .cs-select:focus{outline:none;border-color:var(--ac2);}
     .filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:9px 12px;}
 
     /* Virtual scroll */
@@ -113,31 +123,31 @@
     .cs-col-tag{width:130px;min-width:130px;flex-shrink:0;position:sticky;left:0;z-index:5;background:var(--sf);border-right:2px solid var(--bd);font-size:12px;font-weight:600;padding:0 8px;height:36px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .cs-hdr .cs-col-tag{background:var(--sf2);z-index:25;}
     .cs-col-item{width:88px;min-width:88px;flex-shrink:0;border-right:1px solid var(--bd2);height:36px;display:flex;align-items:center;justify-content:center;position:relative;}
-    .cs-col-item.has-val{background:#071a0d;}
-    .cs-qty-txt{color:#3fb950;font-size:12px;font-weight:600;}
-    .cs-qty-inp{width:76px;background:transparent;border:none;color:#3fb950;font-size:12px;font-weight:600;text-align:center;font-family:inherit;padding:2px 4px;}
-    .cs-qty-inp:focus{outline:1px solid #3ed6c9;border-radius:3px;background:var(--sf2);}
+    .cs-col-item.has-val{background:var(--ok-bg);}
+    .cs-qty-txt{color:var(--ok);font-size:12px;font-weight:600;}
+    .cs-qty-inp{width:76px;background:transparent;border:none;color:var(--ok);font-size:12px;font-weight:600;text-align:center;font-family:inherit;padding:2px 4px;}
+    .cs-qty-inp:focus{outline:1px solid var(--ac2);border-radius:3px;background:var(--sf2);}
     .cs-col-note{width:110px;min-width:110px;flex-shrink:0;border-right:1px solid var(--bd2);height:36px;display:flex;align-items:center;padding:0 4px;}
     .cs-note-inp{width:100%;background:transparent;border:none;color:var(--tx2);font-size:11px;font-family:inherit;padding:2px 4px;}
     .cs-note-inp:focus{outline:1px solid var(--bd);border-radius:3px;color:var(--tx);}
     .cs-col-del{width:72px;min-width:72px;flex-shrink:0;display:flex;align-items:center;justify-content:center;height:36px;gap:2px;}
     .cs-del-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
-    .cs-del-btn:hover{background:#3a1a1a;color:#f85149;}
+    .cs-del-btn:hover{background:var(--err-bg);color:var(--err);}
     .cs-edit-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
-    .cs-edit-btn:hover{background:var(--sf2);color:#3ed6c9;}
-    .cs-tag-edit-inp{width:118px;background:var(--sf2);border:1px solid #3ed6c9;border-radius:4px;color:var(--tx);font-size:12px;font-weight:600;padding:2px 6px;font-family:inherit;}
+    .cs-edit-btn:hover{background:var(--sf2);color:var(--ac2);}
+    .cs-tag-edit-inp{width:118px;background:var(--sf2);border:1px solid var(--ac2);border-radius:4px;color:var(--tx);font-size:12px;font-weight:600;padding:2px 6px;font-family:inherit;}
     .cs-tag-edit-inp:focus{outline:none;}
 
     /* 작업물량 */
     .wv-inp{width:100%;background:transparent;border:none;color:var(--tx);font-size:12px;font-family:inherit;padding:3px 6px;text-align:right;}
-    .wv-inp:focus{outline:1px solid #3ed6c9;border-radius:3px;background:var(--sf2);}
+    .wv-inp:focus{outline:1px solid var(--ac2);border-radius:3px;background:var(--sf2);}
     .wv-inp.lft{text-align:left;}
-    .wv-num{color:#3ed6c9;font-weight:600;font-size:12px;}
+    .wv-num{color:var(--ac2);font-weight:600;font-size:12px;}
     .wv-del-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
-    .wv-del-btn:hover{background:#3a1a1a;color:#f85149;}
+    .wv-del-btn:hover{background:var(--err-bg);color:var(--err);}
 
     /* Toast */
-    #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--sf);border:1px solid var(--bd);border-radius:20px;padding:8px 18px;font-size:12px;color:var(--tx);opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 12px #0006;}
+    #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--sf);border:1px solid var(--bd);border-radius:20px;padding:8px 18px;font-size:12px;color:var(--tx);opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.18);}
     #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
     /* 모바일은 PC와 동일한 레이아웃을 그대로 축소해서 보여주고 핀치줌으로 확인하는 방식이라
@@ -157,7 +167,10 @@
   </style>
 </head>
 <body>
-<script src="/report/admin-gate.js"></script>
+<!-- 삽입 모드에서는 관리자 PIN을 다시 묻지 않는다 — 바깥 앱에서 이미 통과했다. -->
+<script>if(!document.documentElement.classList.contains('embed')){
+  var _ag=document.createElement('script'); _ag.src='/report/admin-gate.js'; document.head.appendChild(_ag);
+}</script>
 <script>
 (function(){
   if(/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)) document.documentElement.classList.add('view-only');
@@ -672,7 +685,7 @@ function renderFooter(){
     <td>${tp>0?tp.toLocaleString():''}</td>
     <td>${tprev>0?tprev.toLocaleString():''}</td>
     <td>${ttod>0?ttod.toLocaleString():''}</td>
-    <td style="color:#3ed6c9">${tcum>0?tcum.toLocaleString():''}</td>
+    <td style="color:var(--ac2)">${tcum>0?tcum.toLocaleString():''}</td>
     <td>${tinstall>0?tinstall.toLocaleString():''}</td>
     <td style="color:${pctColor(adj)};font-size:13px">${tp>0?adj+'%':''}</td><td>–</td>
   </tr>`;
@@ -726,7 +739,7 @@ function renderVolFooter(){
     <td>${tp>0?tp.toLocaleString():''}</td>
     <td>${tprev>0?tprev.toLocaleString():''}</td>
     <td>${ttod>0?ttod.toLocaleString():''}</td>
-    <td style="color:#3ed6c9">${tcum>0?tcum.toLocaleString():''}</td>
+    <td style="color:var(--ac2)">${tcum>0?tcum.toLocaleString():''}</td>
     <td style="color:${pctColor(adj)};font-size:13px">${tp>0?adj+'%':''}</td><td>–</td>
   </tr>`;
 }
@@ -1204,7 +1217,7 @@ function renderWorkFooter(){
     <td>${tp>0?tp.toLocaleString():''}</td>
     <td>${tprev>0?tprev.toLocaleString():''}</td>
     <td>${ttod>0?ttod.toLocaleString():''}</td>
-    <td style="color:#3ed6c9">${tcum>0?tcum.toLocaleString():''}</td>
+    <td style="color:var(--ac2)">${tcum>0?tcum.toLocaleString():''}</td>
     <td style="color:${pctColor(pct)}">${tp>0?pct+'%':''}</td>
     <td colspan="2"></td>
   </tr>`;
@@ -1313,6 +1326,9 @@ initApp();
 
 <!-- 앱 공용 이동 버튼(목록은 로그인한 사람의 등급으로 걸러진다). 파일은 report 저장소에
      하나만 두고 각 앱이 절대경로로 불러온다 — nav-fab.js 하나만 고치면 전체에 반영된다. -->
-<script src="/report/nav-fab.js"></script>
+<!-- 삽입 모드에서는 플로팅 이동 버튼도 띄우지 않는다 — 바깥 앱 것과 두 개가 된다. -->
+<script>if(!document.documentElement.classList.contains('embed')){
+  var _nf=document.createElement('script'); _nf.src='/report/nav-fab.js'; document.body.appendChild(_nf);
+}</script>
 </body>
 </html>
