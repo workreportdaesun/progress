@@ -106,14 +106,14 @@
     .pct-val{font-size:11px;font-weight:600;min-width:38px;text-align:right;white-space:nowrap;}
 
     /* Check List */
-    .cs-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+    /* 상단 컨트롤 줄 — 공정률 탭의 .ctrl과 같은 상자 서식(2026-08-11 통일) */
+    .cs-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:9px 12px;}
     .cs-search{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:5px 10px;font-family:inherit;width:200px;}
     .cs-search:focus{outline:none;border-color:var(--ac2);}
     .cs-tag-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:5px 10px;font-family:inherit;width:160px;}
     .cs-tag-inp:focus{outline:none;border-color:var(--ac2);}
     .cs-select{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:12px;padding:4px 8px;font-family:inherit;cursor:pointer;max-width:160px;}
     .cs-select:focus{outline:none;border-color:var(--ac2);}
-    .filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:9px 12px;}
 
     /* Virtual scroll */
     .cs-wrap{border:1px solid var(--bd);border-radius:var(--r);overflow:auto;background:var(--sf);position:relative;}
@@ -204,9 +204,11 @@
     </div>
   </div>
   <div id="hdr-check" class="adm-only" style="display:none;gap:6px;align-items:center">
-    <label class="btn"><i class="ti ti-table-import"></i> CSV 업로드<input type="file" class="file-inp" accept=".csv" onchange="handleCheckCSV(this)"></label>
-    <div class="hdr-sep"></div>
-    <button class="btn btn-green" onclick="syncCheckToProc()"><i class="ti ti-refresh"></i> 공정률 반영</button>
+    <span id="hdr-check-edit" style="display:none;gap:6px;align-items:center;">
+      <label class="btn"><i class="ti ti-table-import"></i> CSV 업로드<input type="file" class="file-inp" accept=".csv" onchange="handleCheckCSV(this)"></label>
+      <div class="hdr-sep"></div>
+      <button class="btn btn-green" onclick="syncCheckToProc()"><i class="ti ti-refresh"></i> 공정률 반영</button>
+    </span>
   </div>
 </div>
 
@@ -252,15 +254,11 @@
   <!-- CHECK LIST는 날짜만 본다(2026-08-10, 사용자 확정) — 작업일보 관리자 화면의 Check List와
        같은 기준이다. 수량을 넣던 "작업물량" 서브탭은 여기서 뺐다(데이터·코드는 남아 있으므로
        필요하면 이 버튼만 되살리면 된다). -->
-  <div id="ck-sync-note" style="font-size:12px;color:var(--tx2);margin-bottom:10px;"></div>
+  <!-- 상단 줄은 하나로 합쳤다(2026-08-11) — 예전엔 안내문·검색·필터가 각각 한 줄씩 차지해
+       표가 시작되기까지 네 줄이 밀려 있었다. 편집용 칸(TAG 추가)은 작업일보와 동기화된
+       동안에는 눌러도 막히므로 아예 감춘다(setCheckEditUI). -->
   <div class="cs-toolbar">
     <input class="cs-search" id="cs-search" placeholder="TAG 검색 (실시간)..." oninput="applyFilter()">
-    <div class="ctrl-sep adm-only"></div>
-    <input class="cs-tag-inp adm-only" id="cs-new-tag" placeholder="TAG NO. 입력" onkeydown="if(event.key==='Enter')addTagRow()">
-    <button class="btn btn-primary btn-sm adm-only" onclick="addTagRow()"><i class="ti ti-plus"></i> TAG 추가</button>
-  </div>
-  <div class="filter-bar">
-    <span class="ctrl-lbl"><i class="ti ti-filter"></i> 필터</span>
     <div class="ctrl-sep"></div>
     <span class="ctrl-lbl">공종</span>
     <select class="cs-select" id="cs-filter-item" onchange="applyFilter()">
@@ -273,7 +271,14 @@
       <option value="미입력">미입력</option>
     </select>
     <button class="btn btn-sm" onclick="resetFilter()"><i class="ti ti-x"></i> 초기화</button>
-    <span id="filter-badge" style="font-size:11px;color:var(--tx2);margin-left:4px;"></span>
+    <span id="filter-badge" style="font-size:11px;color:var(--tx2);"></span>
+    <span id="ck-edit-ctrl" class="adm-only" style="display:none;gap:6px;align-items:center;">
+      <div class="ctrl-sep"></div>
+      <input class="cs-tag-inp" id="cs-new-tag" placeholder="TAG NO. 입력" onkeydown="if(event.key==='Enter')addTagRow()">
+      <button class="btn btn-primary btn-sm" onclick="addTagRow()"><i class="ti ti-plus"></i> TAG 추가</button>
+    </span>
+    <div class="flex1"></div>
+    <span id="ck-sync-note" style="font-size:11px;color:var(--tx2);white-space:nowrap;"></span>
   </div>
   <div class="cs-wrap" id="cs-wrap">
     <div class="cs-hdr" id="cs-hdr"></div>
@@ -903,7 +908,7 @@ function getCheckCols(){
    그 칸은 비어 있다. 실패하면 checkSynced=false로 두어 예전 수기 데이터를 그대로 보여준다. */
 async function loadChecklistFromSupabase(){
   const note=document.getElementById('ck-sync-note');
-  if(!sbClient){ if(note) note.textContent='⚠️ 서버에 연결하지 못해 이 브라우저에 저장된 예전 값을 보여줍니다.'; return false; }
+  if(!sbClient){ if(note) note.textContent='⚠️ 서버 연결 실패 — 이 브라우저에 저장된 예전 값'; setCheckEditUI(false); return false; }
   try{
     const res=await sbClient.from('progress_checklist').select('tag,cat,menu,complete_date').order('tag');
     if(res.error||!res.data) throw new Error(res.error?res.error.message:'no data');
@@ -923,18 +928,28 @@ async function loadChecklistFromSupabase(){
     checkQtyData=Object.keys(byTag).sort().map(t=>byTag[t]);
     checkSynced=true;
     if(activeCheckSub==='qty') checkData=checkQtyData;
-    if(note) note.textContent=`✓ 작업일보와 동기화됨 — TAG ${checkQtyData.length.toLocaleString()}건, 셀은 완료일자입니다 (조회 전용)`;
+    if(note) note.textContent=`✓ 작업일보 동기화 · TAG ${checkQtyData.length.toLocaleString()}건 · 조회 전용`;
+    setCheckEditUI(true);
     // 열(작업분류)은 작업일보 ⚙️설정 순서 그대로 + 데이터에만 남은 분류를 뒤에 붙여 만든다.
     rebuildCheckCols();
     return true;
   }catch(e){
     console.error('Check List 동기화 실패', e);
     checkSynced=false;
-    if(note) note.textContent='⚠️ 작업일보 Check List를 불러오지 못해 이 브라우저에 저장된 예전 값을 보여줍니다.';
+    if(note) note.textContent='⚠️ 불러오기 실패 — 이 브라우저에 저장된 예전 값';
+    setCheckEditUI(false);
     return false;
   }
 }
 
+/* 작업일보와 동기화된 동안에는 TAG 추가·CSV 업로드·공정률 반영이 전부 막혀 있다(눌러도
+   "편집할 수 없습니다" 안내만 뜬다). 화면에 남겨두면 자리만 차지하므로 감춘다. */
+function setCheckEditUI(synced){
+  var edit=document.getElementById('ck-edit-ctrl');
+  if(edit) edit.style.display = synced ? 'none' : 'inline-flex';
+  var hdr=document.getElementById('hdr-check-edit');
+  if(hdr) hdr.style.display = synced ? 'none' : 'inline-flex';
+}
 function switchCheckSub(sub){
   activeCheckSub=sub;
   checkData=sub==='qty'?checkQtyData:checkVolData;
