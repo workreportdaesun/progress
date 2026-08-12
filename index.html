@@ -112,6 +112,15 @@
     .lock-icon:hover{color:var(--tx);}
     .factor-inp{width:52px;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:3px 6px;text-align:center;font-family:inherit;}
     .factor-inp:focus{outline:none;border-color:var(--ac2);}
+    /* 전체 공정률 요약(2026-08-12 요청) — 합계 행은 표 맨 아래라 분류가 많으면 스크롤해야
+       보인다. 같은 값(FACTOR 가중평균)을 표 위에 한 번 더 크게 보여준다. */
+    .proc-sum{display:flex;align-items:center;gap:12px;padding:9px 14px;margin-bottom:10px;
+      background:var(--head-bg);border:1px solid var(--bd);border-radius:8px;}
+    .proc-sum-lbl{font-size:12px;font-weight:700;color:var(--tx2);white-space:nowrap;}
+    .proc-sum-val{font-size:22px;font-weight:800;line-height:1;white-space:nowrap;min-width:64px;}
+    .proc-sum-bar{flex:1;height:10px;background:var(--bd);border-radius:5px;overflow:hidden;min-width:80px;}
+    .proc-sum-fill{height:100%;border-radius:5px;transition:width .4s;}
+    .proc-sum-sub{font-size:11px;color:var(--tx2);white-space:nowrap;}
     .pbar-wrap{display:flex;align-items:center;gap:6px;}
     .pbar{flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden;min-width:36px;}
     .pbar-fill{height:100%;border-radius:3px;transition:width .4s;}
@@ -250,6 +259,14 @@
     <div class="ctrl" id="qty-sync-ctrl">
       <div class="import-status" id="sync-status" style="display:none"></div>
       <div class="flex1"></div>
+    </div>
+    <!-- 전체 공정률 — 표 맨 아래 합계 행과 같은 값(FACTOR 가중평균)을 renderFooter가 같이 채운다.
+         분류가 많으면 합계 행이 스크롤 밖으로 나가서 위에도 한 번 보여준다(2026-08-12 요청). -->
+    <div class="proc-sum" id="proc-sum">
+      <span class="proc-sum-lbl">전체 공정률</span>
+      <span class="proc-sum-val" id="proc-sum-val">–</span>
+      <div class="proc-sum-bar"><div class="proc-sum-fill" id="proc-sum-fill" style="width:0%"></div></div>
+      <span class="proc-sum-sub" id="proc-sum-sub"></span>
     </div>
     <div class="tbl-wrap">
       <table style="min-width:840px">
@@ -727,6 +744,22 @@ function renderFooter(){
     <td>${tinstall>0?tinstall.toLocaleString():''}</td>
     <td style="color:${pctColor(adj)};font-size:13px">${tp>0?adj+'%':''}</td><td>–</td>
   </tr>`;
+  renderProcSummary(tp, tcum, adj);
+}
+/* 표 위의 "전체 공정률" 요약. 합계 행과 절대 어긋나지 않도록, renderFooter가 이미 구한 값을
+   그대로 넘겨받는다 — 여기서 다시 계산하면 나중에 규칙이 갈라질 수 있다(2026-08-12). */
+function renderProcSummary(tp, tcum, adj){
+  const val=document.getElementById('proc-sum-val');
+  if(!val) return;
+  const has=tp>0, c=pctColor(adj);
+  val.textContent = has ? adj+'%' : '–';
+  val.style.color = has ? c : 'var(--tx2)';
+  const fill=document.getElementById('proc-sum-fill');
+  if(fill){ fill.style.width=(has?Math.min(adj,100):0)+'%'; fill.style.background=c; }
+  const sub=document.getElementById('proc-sum-sub');
+  if(sub) sub.textContent = has
+    ? `계획 ${tp.toLocaleString()} · 누계 ${tcum.toLocaleString()}`
+    : '계획수량이 없습니다';
 }
 function updatePlan(i,inp){procData[i].plan=parseFloat(inp.value)||0;procData[i].planLocked=true;calcAndRender();}
 function updateFactor(i,inp){procData[i].factor=parseFloat(inp.value)??1;renderTable();}
