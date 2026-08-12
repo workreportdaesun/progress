@@ -93,24 +93,28 @@
     .tbl-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:8px;margin-bottom:16px;overflow:auto;}
     table{width:100%;border-collapse:collapse;table-layout:fixed;}
     td,th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-    thead th{background:var(--head-bg);color:var(--tx);font-size:12px;font-weight:700;padding:8px 10px;text-align:center;border-bottom:1px solid var(--bd);white-space:nowrap;}
+    /* ── 표 서식은 인원투입계획/실투입의 출력일지(table.dt)를 기준으로 통일(2026-08-12) ──
+       글자 12px · 행 높이 25px · 선 1px var(--bd) · 머리 var(--head-bg).
+       예전엔 이 표만 세로 구분선이 아예 없고 가로선도 연한 색(--bd2)이라 다른 탭과 달라 보였다.
+       높이는 위아래 padding 대신 height로 고정한다 — 입력칸이 든 칸만 커지지 않게. */
+    thead th{background:var(--head-bg);color:var(--tx);font-size:12px;font-weight:700;padding:0 7px;height:25px;text-align:center;border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);white-space:nowrap;}
     thead th.lft{text-align:left;}
-    tbody tr{border-bottom:1px solid var(--bd2);transition:background .1s;}
-    tbody tr:last-child{border-bottom:none;}
+    tbody tr{transition:background .1s;}   /* 행 구분선은 아래 td의 border-top이 그린다(기준과 동일) */
     tbody tr:hover{background:var(--sf2);}
-    td{padding:7px 10px;font-size:12px;text-align:center;vertical-align:middle;}
+    td{padding:0 7px;height:25px;font-size:12px;text-align:center;vertical-align:middle;border-right:1px solid var(--bd);border-top:1px solid var(--bd);}
     td.lft{text-align:left;font-weight:500;}
-    td.unit{color:var(--tx2);font-size:11px;}
-    tfoot td{background:var(--head-bg);font-weight:700;font-size:12px;border-top:1px solid var(--bd);padding:8px 10px;text-align:center;}
+    td.unit{color:var(--tx2);}   /* 글자 크기는 다른 열과 같은 12px — 단위만 작으면 서식이 달라 보인다(2026-08-12) */
+    tfoot td{background:var(--head-bg);font-weight:700;font-size:12px;border-top:1px solid var(--bd);padding:0 7px;height:25px;text-align:center;}
     input[type=number]{appearance:textfield;-moz-appearance:textfield;}
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
-    .plan-inp{width:72px;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:3px 6px;text-align:right;font-family:inherit;}
+    /* 입력칸 높이 21px — 25px 행 안에 여백까지 들어가는 크기(기준 앱 table.dt와 동일) */
+    .plan-inp{width:72px;height:21px;box-sizing:border-box;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:0 6px;text-align:right;font-family:inherit;}
     .plan-inp:focus{outline:none;border-color:var(--ac2);}
     .plan-inp.locked{background:transparent;border-color:transparent;color:var(--tx2);cursor:default;pointer-events:none;}
     .lock-icon{font-size:10px;color:var(--tx2);cursor:pointer;margin-left:2px;vertical-align:middle;}
     .lock-icon:hover{color:var(--tx);}
-    .factor-inp{width:52px;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:3px 6px;text-align:center;font-family:inherit;}
+    .factor-inp{width:52px;height:21px;box-sizing:border-box;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:0 6px;text-align:center;font-family:inherit;}
     .factor-inp:focus{outline:none;border-color:var(--ac2);}
     /* 전체 공정률 요약(2026-08-12 요청) — 합계 행은 표 맨 아래라 분류가 많으면 스크롤해야
        보인다. 같은 값(FACTOR 가중평균)을 표 위에 한 번 더 크게 보여준다. */
@@ -124,7 +128,7 @@
     .pbar-wrap{display:flex;align-items:center;gap:6px;}
     .pbar{flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden;min-width:36px;}
     .pbar-fill{height:100%;border-radius:3px;transition:width .4s;}
-    .pct-val{font-size:11px;font-weight:600;min-width:38px;text-align:right;white-space:nowrap;}
+    .pct-val{font-size:12px;font-weight:600;min-width:38px;text-align:right;white-space:nowrap;}
 
     /* Check List */
     /* 상단 컨트롤 줄 — 공정률 탭의 .ctrl과 같은 상자 서식(2026-08-11 통일) */
@@ -143,25 +147,27 @@
     .cs-hdr{display:flex;position:sticky;top:0;z-index:20;background:var(--head-bg);border-bottom:1px solid var(--bd);min-width:max-content;}
     /* 열 이름은 작업일보의 작업분류 이름을 줄이지 않고 그대로 쓴다(2026-08-12) — 예전엔 ABBR로
        "CABLE TRAY→C.Tray"처럼 줄여 써서 작업일보와 달라 보였다. 긴 이름은 두 줄로 접는다. */
-    .cs-hdr-cell{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--tx);padding:6px 4px;border-right:1px solid var(--bd2);min-height:44px;white-space:normal;line-height:1.2;text-align:center;word-break:keep-all;overflow:hidden;}
+    /* 2026-08-12: 출력일지 기준으로 서식 통일 — 행 높이 25px, 선 1px var(--bd).
+       열 이름은 작업일보 작업분류 원문을 쓰는데, 두 줄로 접으면 머리 높이만 44px이 되어
+       다른 탭과 달라 보였다. 열 폭을 넓혀(W_ITEM=112) 한 줄에 들어가게 하고 25px로 맞춘다. */
+    .cs-hdr-cell{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--tx);padding:0 6px;border-right:1px solid var(--bd);height:25px;white-space:nowrap;text-align:center;overflow:hidden;text-overflow:ellipsis;}
     .cs-hdr-cell.lft{justify-content:flex-start;padding-left:8px;}
     .cs-virtual{position:relative;}
-    .cs-row{display:flex;align-items:center;border-bottom:1px solid var(--bd2);min-width:max-content;height:36px;}
+    .cs-row{display:flex;align-items:center;border-bottom:1px solid var(--bd);min-width:max-content;height:25px;}
     .cs-row:hover{background:var(--sf2);}
     .cs-row:hover .cs-col-tag{background:var(--sf2);}
-    .cs-col-tag{width:130px;min-width:130px;flex-shrink:0;position:sticky;left:0;z-index:5;background:var(--sf);border-right:1px solid var(--bd2);font-size:12px;font-weight:600;padding:0 8px;height:36px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    /* 헤더의 TAG NO. 칸은 두 줄짜리 열 이름과 높이를 맞춰야 한다(.cs-col-tag의 height:36px 상쇄) */
-    .cs-hdr .cs-col-tag{background:var(--head-bg);z-index:25;height:auto;min-height:44px;}
+    .cs-col-tag{width:130px;min-width:130px;flex-shrink:0;position:sticky;left:0;z-index:5;background:var(--sf);border-right:1px solid var(--bd);font-size:12px;font-weight:600;padding:0 8px;height:25px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .cs-hdr .cs-col-tag{background:var(--head-bg);z-index:25;}
     /* 실제 폭은 JS가 W_ITEM으로 인라인 지정한다 — 여기 값은 그 예비값이라 W_ITEM과 같이 둔다. */
-    .cs-col-item{width:96px;min-width:96px;flex-shrink:0;border-right:1px solid var(--bd2);height:36px;display:flex;align-items:center;justify-content:center;position:relative;}
+    .cs-col-item{width:112px;min-width:112px;flex-shrink:0;border-right:1px solid var(--bd);height:25px;display:flex;align-items:center;justify-content:center;position:relative;}
     .cs-col-item.has-val{background:var(--ok-bg);}
     .cs-qty-txt{color:var(--ok);font-size:12px;font-weight:600;}
     .cs-qty-inp{width:76px;background:transparent;border:none;color:var(--ok);font-size:12px;font-weight:600;text-align:center;font-family:inherit;padding:2px 4px;}
     .cs-qty-inp:focus{outline:1px solid var(--ac2);border-radius:3px;background:var(--sf2);}
-    .cs-col-note{width:110px;min-width:110px;flex-shrink:0;border-right:1px solid var(--bd2);height:36px;display:flex;align-items:center;padding:0 4px;}
+    .cs-col-note{width:110px;min-width:110px;flex-shrink:0;border-right:1px solid var(--bd);height:25px;display:flex;align-items:center;padding:0 4px;}
     .cs-note-inp{width:100%;background:transparent;border:none;color:var(--tx2);font-size:11px;font-family:inherit;padding:2px 4px;}
     .cs-note-inp:focus{outline:1px solid var(--bd);border-radius:3px;color:var(--tx);}
-    .cs-col-del{width:72px;min-width:72px;flex-shrink:0;display:flex;align-items:center;justify-content:center;height:36px;gap:2px;}
+    .cs-col-del{width:72px;min-width:72px;flex-shrink:0;display:flex;align-items:center;justify-content:center;height:25px;gap:2px;}
     .cs-del-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
     .cs-del-btn:hover{background:var(--err-bg);color:var(--err);}
     .cs-edit-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
@@ -382,10 +388,11 @@ const COLORS=['#2d5a8e','#3B6D11','#BA7517','#A32D2D','#185FA5','#854F0B',
   '#4B0082','#2F4F4F','#8B4513','#5F9EA0','#2d5a8e','#3B6D11',
   '#BA7517','#A32D2D','#185FA5'];
 
-// W_ITEM: 줄임말 대신 작업일보 원래 이름("CABLE PULLING" 등)을 쓰게 되면서 88→96으로 넓힘
-// (두 줄로 접히므로 이 정도면 "JUNCTION"/"BOX"처럼 단어 단위로 깔끔히 나뉜다). 2026-08-12
-const W_ITEM=96, W_NOTE=110, W_DEL=72;
-const ROW_H=36, BUFFER=20;
+// W_ITEM: 작업일보 원래 이름("CABLE PULLING" 등)을 한 줄에 담아야 해서 88→112로 넓힘.
+// 머리 높이를 다른 탭과 같은 25px 한 줄로 맞추려면 접지 않고 다 들어가야 한다. 2026-08-12
+const W_ITEM=112, W_NOTE=110, W_DEL=72;
+// ROW_H 는 CSS .cs-row 의 height 와 반드시 같아야 한다 — 다르면 가상 스크롤 행 위치가 어긋난다.
+const ROW_H=25, BUFFER=20;
 
 function makeProcData(saved){
   return PROC_ITEMS.map(p=>{
