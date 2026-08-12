@@ -228,17 +228,20 @@
       <div class="ctrl-sep"></div>
       <div class="import-status" id="import-status"><i class="ti ti-circle-x"></i> 일보 미연동</div>
     </div>
+    <!-- 새로고침 버튼은 삭제(2026-08-12 사용자 요청). loadReportProgressData()는 화면을 열 때
+         자동으로 돈다(아래 초기화 코드) — 수동 버튼이 필요 없다. -->
     <div class="ctrl" id="qty-sync-ctrl">
       <div class="import-status" id="sync-status" style="display:none"></div>
       <div class="flex1"></div>
-      <button class="btn btn-sm" id="syncRefreshBtn" onclick="loadReportProgressData()"><i class="ti ti-refresh"></i> 새로고침</button>
     </div>
     <div class="tbl-wrap">
       <table style="min-width:840px">
         <thead><tr>
           <th class="lft" style="width:160px">작업분류</th>
           <th style="width:52px">단위</th><th style="width:90px">계획수량</th>
-          <th style="width:72px">전일누계</th><th style="width:72px">금일</th><th style="width:72px">누계</th>
+          <!-- 전일누계 열은 화면에서 삭제(2026-08-12 사용자 요청). 데이터(d.prev)는 그대로 두고
+               누계(=전일누계+금일)·공정률·CSV 계산에는 계속 쓰인다 — 표시만 뺀 것이다. -->
+          <th style="width:72px">금일</th><th style="width:72px">누계</th>
           <th style="width:80px">설치(엑셀)</th>
           <th style="width:110px">공정률</th><th style="width:58px">FACTOR</th>
         </tr></thead>
@@ -278,7 +281,8 @@
       <button class="btn btn-primary btn-sm" onclick="addTagRow()"><i class="ti ti-plus"></i> TAG 추가</button>
     </span>
     <div class="flex1"></div>
-    <span id="ck-sync-note" style="font-size:11px;color:var(--tx2);white-space:nowrap;"></span>
+    <!-- 우측 "✓ 작업일보 동기화 · TAG n건 · 조회 전용" 안내는 삭제(2026-08-12 사용자 요청).
+         이 값을 채우던 loadChecklistFromSupabase는 전부 if(note) 가드라 요소가 없어도 안전하다. -->
   </div>
   <div class="cs-wrap" id="cs-wrap">
     <div class="cs-hdr" id="cs-hdr"></div>
@@ -675,7 +679,6 @@ function renderTable(){
     return`<tr>
       <td class="lft">${d.item}</td><td class="unit">${d.unit}</td>
       ${editable?`<td><input type="number" min="0" class="plan-inp" value="${d.plan||''}" placeholder="입력" onchange="updatePlan(${i},this)"></td>`:`<td>${d.plan>0?d.plan:''}</td>`}
-      ${editable?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.prev||''}" placeholder="0" onchange="setProcPrev(${i},this)"></td>`:`<td>${d.prev>0?d.prev:''}</td>`}
       ${editable?`<td><input type="number" min="0" class="plan-inp" style="width:60px" value="${d.today||''}" placeholder="0" onchange="setProcToday(${i},this)"></td>`:`<td>${d.today>0?d.today:''}</td>`}
       <td style="font-weight:600;color:${c1}">${cum>0?cum:''}</td>
       <td>${d.hasInstall?(d.install||0):'–'}</td>
@@ -697,7 +700,6 @@ function renderFooter(){
   document.getElementById('proc-tfoot').innerHTML=`<tr>
     <td class="lft" colspan="2">합 계</td>
     <td>${tp>0?tp.toLocaleString():''}</td>
-    <td>${tprev>0?tprev.toLocaleString():''}</td>
     <td>${ttod>0?ttod.toLocaleString():''}</td>
     <td style="color:var(--ac2)">${tcum>0?tcum.toLocaleString():''}</td>
     <td>${tinstall>0?tinstall.toLocaleString():''}</td>
