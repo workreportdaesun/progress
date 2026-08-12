@@ -56,9 +56,15 @@
        배경은 투명하게 두어 바깥 카드 색을 그대로 쓴다. */
     html.embed body{background:transparent;}
     html.embed header{display:none;}
-    html.embed .tab-bar{top:0;}
+    /* 탭바는 삽입 모드에서 대개 "빈 줄"이 된다 — 탭 버튼은 아래에서 감추고, 같은 줄의 CSV·
+       가져오기 버튼들은 작업일보와 동기화된 동안에는 원래 display:none이기 때문이다.
+       그런데도 위아래 여백(8px)과 border-bottom 1px이 계속 그려져서, 검색줄 바로 위에
+       쓸데없는 실선 한 줄과 빈 공간이 남았다(2026-08-12 사용자 지적).
+       여백과 실선을 없애 내용이 있을 때만 높이가 생기게 한다 — 관리자용 버튼이 보이는
+       상황에서는 자연스럽게 다시 한 줄이 열린다. */
+    html.embed .tab-bar{top:0;padding:0;border-bottom:none;}
     /* 공정률/CHECK LIST 전환은 바깥 앱의 탭이 대신하므로 자체 탭 버튼은 감춘다.
-       같은 줄의 CSV·새로고침 같은 동작 버튼들은 그대로 둔다. */
+       같은 줄의 CSV 같은 동작 버튼들은 그대로 둔다. */
     html.embed .tab-nav{display:none;}
     html.embed .page{padding:0;}   /* 바깥 카드가 이미 여백을 준다 */
 
@@ -70,6 +76,11 @@
     /* Controls */
     /* 컨트롤 줄은 상자 없이 나열한다 — 인원투입계획/실투입 앱의 .toolbar와 같은 모양(2026-08-11) */
     .ctrl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+    /* 공정률의 이 줄은 새로고침 버튼을 뺀 뒤 평소 완전히 비어 있다(#sync-status는 동기화가
+       실패했을 때만 보인다) — 빈 줄이 표를 12px 아래로 밀던 것을 없애고, 안내가 실제로
+       뜰 때만 그 요소가 자기 여백을 갖게 한다(2026-08-12). */
+    #qty-sync-ctrl{margin-bottom:0;}
+    #sync-status{margin-bottom:12px;}
     .ctrl-sep{width:1px;height:18px;background:var(--bd);margin:0 2px;}
     .ctrl-lbl{font-size:12px;font-weight:700;color:var(--tx2);white-space:nowrap;}
     .date-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;}
