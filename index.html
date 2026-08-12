@@ -275,7 +275,10 @@
       <span class="proc-sum-sub" id="proc-sum-sub"></span>
     </div>
     <div class="tbl-wrap">
-      <table style="min-width:840px">
+      <!-- min-width:840px 제거(2026-08-13 사용자 요청) — 열 폭 합계는 694px인데 840px로 벌려놔서
+           넘칠 이유가 없는데도 가로 스크롤바가 생겼다(전일누계 72px을 뺀 뒤 이 값을 안 줄인 탓).
+           table{width:100%;table-layout:fixed}이라 min-width가 없으면 항상 창 폭에 맞는다. -->
+      <table>
         <thead><tr>
           <th class="lft" style="width:160px">작업분류</th>
           <th style="width:52px">단위</th><th style="width:90px">계획수량</th>
