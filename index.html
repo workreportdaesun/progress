@@ -314,7 +314,9 @@
       <option value="미입력">미입력</option>
     </select>
     <button class="btn btn-sm" onclick="resetFilter()"><i class="ti ti-x"></i> 초기화</button>
-    <span id="filter-badge" style="font-size:11px;color:var(--tx2);"></span>
+    <!-- 필터 결과 개수(#filter-badge)는 삭제(2026-08-13 사용자 요청).
+         applyFilter에서 이 값을 쓰던 줄도 함께 제거했다. -->
+
     <span id="ck-edit-ctrl" class="adm-only" style="display:none;gap:6px;align-items:center;">
       <div class="ctrl-sep"></div>
       <input class="cs-tag-inp" id="cs-new-tag" placeholder="TAG NO. 입력" onkeydown="if(event.key==='Enter')addTagRow()">
@@ -1083,8 +1085,6 @@ function applyFilter(){
     if(fs==='미입력')return !filled;
     return true;
   });
-  const badge=document.getElementById('filter-badge');
-  badge.textContent=(fi||fs)?`${filteredCheck.length.toLocaleString()}개 표시`:'';
   const wrap=document.getElementById('cs-wrap');
   wrap.scrollTop=0;vsRender(wrap);
 }
