@@ -129,17 +129,22 @@
 
     /* Virtual scroll */
     .cs-wrap{border:1px solid var(--bd);border-radius:8px;overflow:auto;background:var(--sf);position:relative;}
-    .cs-hdr{display:flex;position:sticky;top:0;z-index:20;background:var(--head-bg);border-bottom:2px solid var(--bd);min-width:max-content;}
-    /* 열 이름은 작업일보 설정에서 오므로 ABBR에 없는 긴 이름이 들어올 수 있다 — 칸을 넘치지 않게 자른다(전체 이름은 title 툴팁). */
-    .cs-hdr-cell{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--tx);padding:6px 4px;border-right:1px solid var(--bd2);height:36px;white-space:nowrap;overflow:hidden;}
+    /* 선 굵기는 표 전체가 1px로 통일(2026-08-12) — 헤더 아래와 TAG NO. 열만 2px이라
+       다른 열·행보다 눈에 띄게 굵었다. */
+    .cs-hdr{display:flex;position:sticky;top:0;z-index:20;background:var(--head-bg);border-bottom:1px solid var(--bd);min-width:max-content;}
+    /* 열 이름은 작업일보의 작업분류 이름을 줄이지 않고 그대로 쓴다(2026-08-12) — 예전엔 ABBR로
+       "CABLE TRAY→C.Tray"처럼 줄여 써서 작업일보와 달라 보였다. 긴 이름은 두 줄로 접는다. */
+    .cs-hdr-cell{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--tx);padding:6px 4px;border-right:1px solid var(--bd2);min-height:44px;white-space:normal;line-height:1.2;text-align:center;word-break:keep-all;overflow:hidden;}
     .cs-hdr-cell.lft{justify-content:flex-start;padding-left:8px;}
     .cs-virtual{position:relative;}
     .cs-row{display:flex;align-items:center;border-bottom:1px solid var(--bd2);min-width:max-content;height:36px;}
     .cs-row:hover{background:var(--sf2);}
     .cs-row:hover .cs-col-tag{background:var(--sf2);}
-    .cs-col-tag{width:130px;min-width:130px;flex-shrink:0;position:sticky;left:0;z-index:5;background:var(--sf);border-right:2px solid var(--bd);font-size:12px;font-weight:600;padding:0 8px;height:36px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .cs-hdr .cs-col-tag{background:var(--head-bg);z-index:25;}
-    .cs-col-item{width:88px;min-width:88px;flex-shrink:0;border-right:1px solid var(--bd2);height:36px;display:flex;align-items:center;justify-content:center;position:relative;}
+    .cs-col-tag{width:130px;min-width:130px;flex-shrink:0;position:sticky;left:0;z-index:5;background:var(--sf);border-right:1px solid var(--bd2);font-size:12px;font-weight:600;padding:0 8px;height:36px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    /* 헤더의 TAG NO. 칸은 두 줄짜리 열 이름과 높이를 맞춰야 한다(.cs-col-tag의 height:36px 상쇄) */
+    .cs-hdr .cs-col-tag{background:var(--head-bg);z-index:25;height:auto;min-height:44px;}
+    /* 실제 폭은 JS가 W_ITEM으로 인라인 지정한다 — 여기 값은 그 예비값이라 W_ITEM과 같이 둔다. */
+    .cs-col-item{width:96px;min-width:96px;flex-shrink:0;border-right:1px solid var(--bd2);height:36px;display:flex;align-items:center;justify-content:center;position:relative;}
     .cs-col-item.has-val{background:var(--ok-bg);}
     .cs-qty-txt{color:var(--ok);font-size:12px;font-weight:600;}
     .cs-qty-inp{width:76px;background:transparent;border:none;color:var(--ok);font-size:12px;font-weight:600;text-align:center;font-family:inherit;padding:2px 4px;}
@@ -344,6 +349,9 @@ const PROC_ITEMS=[
   {item:'STEAM TRACING',unit:'M'},
   {item:'SCAFFOLDING',unit:'식'},{item:'OTHERS',unit:'식'},
 ];
+/* 2026-08-12: 화면(표 머리·공종 필터)에는 더 이상 쓰지 않는다 — 작업일보 작업분류 이름을
+   그대로 보여주기로 했다. 이 표는 CSV 업로드 때만 남겨둔다: 예전에 내려받은 CSV의 머리글이
+   "C.Tray" 같은 줄임말이라, 지우면 그 파일들을 못 읽는다(아래 handleCheckCSV의 열 매칭). */
 const ABBR={'DCS PANEL':'DCS','LCP':'LCP','JUNCTION BOX':'J-Box',
   'INSTRUMENT':'Inst','CABLE DUCT':'C.Duct','CABLE TRAY':'C.Tray','CABLE PULLING':'C.Pull',
   'CONDUIT PIPE':'Conduit','AIR PIPE':'Air','HOOK UP':'H/U',
@@ -356,7 +364,9 @@ const COLORS=['#2d5a8e','#3B6D11','#BA7517','#A32D2D','#185FA5','#854F0B',
   '#4B0082','#2F4F4F','#8B4513','#5F9EA0','#2d5a8e','#3B6D11',
   '#BA7517','#A32D2D','#185FA5'];
 
-const W_ITEM=88, W_NOTE=110, W_DEL=72;
+// W_ITEM: 줄임말 대신 작업일보 원래 이름("CABLE PULLING" 등)을 쓰게 되면서 88→96으로 넓힘
+// (두 줄로 접히므로 이 정도면 "JUNCTION"/"BOX"처럼 단어 단위로 깔끔히 나뉜다). 2026-08-12
+const W_ITEM=96, W_NOTE=110, W_DEL=72;
 const ROW_H=36, BUFFER=20;
 
 function makeProcData(saved){
@@ -995,7 +1005,8 @@ function rebuildFilterSelect(){
     const opt=document.createElement('option');
     opt.value=p.item;
     // 단위는 작업일보 설정값(item_unit)이라 비어 있을 수 있다 — 그땐 괄호를 안 붙인다.
-    opt.textContent=p.unit?`${ABBR[p.item]||p.item} (${p.unit})`:(ABBR[p.item]||p.item);
+    // 공종 필터도 표 머리와 같은 이름(작업일보 작업분류 원문)을 쓴다 — 줄임말을 섞으면 서로 달라 보인다.
+    opt.textContent=p.unit?`${p.item} (${p.unit})`:p.item;
     sel.appendChild(opt);
   });
 }
@@ -1014,7 +1025,7 @@ function buildCsHeader(){
   const cols=getCheckCols();
   document.getElementById('cs-hdr').innerHTML=
     `<div class="cs-hdr-cell cs-col-tag lft">TAG NO.</div>`+
-    cols.map(p=>`<div class="cs-hdr-cell" style="width:${W_ITEM}px;min-width:${W_ITEM}px" title="${p.item}${p.unit?' ('+p.unit+')':''}">${ABBR[p.item]||p.item}</div>`).join('')+
+    cols.map(p=>`<div class="cs-hdr-cell" style="width:${W_ITEM}px;min-width:${W_ITEM}px" title="${p.item}${p.unit?' ('+p.unit+')':''}">${p.item}</div>`).join('')+
     `<div class="cs-hdr-cell" style="width:${W_NOTE}px;min-width:${W_NOTE}px">비고</div>`+
     `<div class="cs-hdr-cell" style="width:${W_DEL}px;min-width:${W_DEL}px"></div>`;
 }
