@@ -26,7 +26,7 @@
     header{background:linear-gradient(135deg,var(--hdr-1),var(--hdr-2));border-bottom:none;padding:0 16px;position:sticky;top:0;z-index:200;}
     .hdr{display:flex;align-items:center;gap:8px;height:48px;width:100%;color:#fff;}
     .hdr-title{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;}
-    .hdr-title img{width:28px;height:28px;border-radius:6px;}
+    .hdr-title img{width:28px;height:28px;border-radius:0;}
     .hdr-title small{font-size:11px;color:rgba(255,255,255,0.65);font-weight:400;margin-left:6px;}
     .flex1{flex:1;}
     header .btn{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.3);color:#fff;}
@@ -36,14 +36,14 @@
     /* 탭바 — 헤더(남색)와 분리된 두 번째 행. 탭/버튼이 많아 한 줄에 다 안 들어가던 문제를 해결 */
     .tab-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%;padding:8px 16px;background:var(--sf);border-bottom:1px solid var(--bd);position:sticky;top:48px;z-index:190;}
     .tab-nav{display:flex;gap:2px;}
-    .tab-btn{padding:5px 14px;border-radius:var(--r);border:1px solid var(--bd);background:var(--bg);color:var(--tx2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;}
+    .tab-btn{padding:5px 14px;border-radius:0;border:1px solid var(--bd);background:var(--bg);color:var(--tx2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;}
     .tab-btn:hover{border-color:var(--ac);color:var(--tx);}
     .tab-btn.on{background:var(--ac);border-color:var(--ac);color:#fff;}
     .hdr-sep{width:1px;height:22px;background:var(--bd);}
 
     /* Buttons */
     /* 버튼 서식은 인원투입계획/실투입 앱의 .btn.sm.ghost와 동일하게 맞춤(2026-08-11 통일) */
-    .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;border:1px solid var(--fbd);background:var(--sf2);color:var(--ac);font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap;}
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:0;border:1px solid var(--fbd);background:var(--sf2);color:var(--ac);font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap;}
     .btn:hover{background:var(--bd2);}
     .btn-primary{background:var(--ac);border-color:var(--ac);color:#fff;}
     .btn-primary:hover{background:var(--ac2);border-color:var(--ac2);}
@@ -83,7 +83,7 @@
     #sync-status{margin-bottom:12px;}
     .ctrl-sep{width:1px;height:18px;background:var(--bd);margin:0 2px;}
     .ctrl-lbl{font-size:12px;font-weight:700;color:var(--tx2);white-space:nowrap;}
-    .date-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;}
+    .date-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:0;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;}
     .date-inp:focus{outline:none;border-color:var(--ac2);}
     .import-status{font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:4px;}
     #syncRefreshBtn.spin i{display:inline-block;animation:spin .8s linear infinite;}
@@ -114,12 +114,12 @@
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
     /* 입력칸 높이 21px — 25px 행 안에 여백까지 들어가는 크기(기준 앱 table.dt와 동일) */
-    .plan-inp{width:72px;height:21px;box-sizing:border-box;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:0 6px;text-align:right;font-family:inherit;}
+    .plan-inp{width:72px;height:21px;box-sizing:border-box;background:var(--sf2);border:1px solid var(--bd);border-radius:0;color:var(--tx);font-size:12px;padding:0 6px;text-align:right;font-family:inherit;}
     .plan-inp:focus{outline:none;border-color:var(--ac2);}
     .plan-inp.locked{background:transparent;border-color:transparent;color:var(--tx2);cursor:default;pointer-events:none;}
     .lock-icon{font-size:10px;color:var(--tx2);cursor:pointer;margin-left:2px;vertical-align:middle;}
     .lock-icon:hover{color:var(--tx);}
-    .factor-inp{width:52px;height:21px;box-sizing:border-box;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:12px;padding:0 6px;text-align:center;font-family:inherit;}
+    .factor-inp{width:52px;height:21px;box-sizing:border-box;background:var(--sf2);border:1px solid var(--bd);border-radius:0;color:var(--tx);font-size:12px;padding:0 6px;text-align:center;font-family:inherit;}
     .factor-inp:focus{outline:none;border-color:var(--ac2);}
     /* 전체 공정률 요약(2026-08-12 요청) — 합계 행은 표 맨 아래라 분류가 많으면 스크롤해야
        보인다. 같은 값(FACTOR 가중평균)을 표 위에 한 번 더 크게 보여준다. */
@@ -130,22 +130,22 @@
       background:var(--head-bg);border:1px solid var(--bd);border-radius:0;}   /* 바로 아래 표와 같은 폭이라 직각으로 맞춤(2026-08-13) */
     .proc-sum-lbl{font-size:12px;font-weight:700;color:var(--tx2);white-space:nowrap;}
     .proc-sum-val{font-size:17px;font-weight:800;line-height:1;white-space:nowrap;min-width:56px;}
-    .proc-sum-bar{flex:1;height:10px;background:var(--bd);border-radius:5px;overflow:hidden;min-width:80px;}
-    .proc-sum-fill{height:100%;border-radius:5px;transition:width .4s;}
+    .proc-sum-bar{flex:1;height:10px;background:var(--bd);border-radius:0;overflow:hidden;min-width:80px;}
+    .proc-sum-fill{height:100%;border-radius:0;transition:width .4s;}
     .proc-sum-sub{font-size:11px;color:var(--tx2);white-space:nowrap;}
     .pbar-wrap{display:flex;align-items:center;gap:6px;}
-    .pbar{flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden;min-width:36px;}
-    .pbar-fill{height:100%;border-radius:3px;transition:width .4s;}
+    .pbar{flex:1;height:6px;background:var(--bd);border-radius:0;overflow:hidden;min-width:36px;}
+    .pbar-fill{height:100%;border-radius:0;transition:width .4s;}
     .pct-val{font-size:12px;font-weight:600;min-width:38px;text-align:right;white-space:nowrap;}
 
     /* Check List */
     /* 상단 컨트롤 줄 — 공정률 탭의 .ctrl과 같은 상자 서식(2026-08-11 통일) */
     .cs-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
-    .cs-search{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;width:200px;}
+    .cs-search{background:var(--sf2);border:1px solid var(--bd);border-radius:0;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;width:200px;}
     .cs-search:focus{outline:none;border-color:var(--ac2);}
-    .cs-tag-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;width:160px;}
+    .cs-tag-inp{background:var(--sf2);border:1px solid var(--bd);border-radius:0;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;width:160px;}
     .cs-tag-inp:focus{outline:none;border-color:var(--ac2);}
-    .cs-select{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;cursor:pointer;max-width:160px;}
+    .cs-select{background:var(--sf2);border:1px solid var(--bd);border-radius:0;color:var(--tx);font-size:13px;padding:6px 8px;font-family:inherit;cursor:pointer;max-width:160px;}
     .cs-select:focus{outline:none;border-color:var(--ac2);}
 
     /* Virtual scroll */
@@ -173,28 +173,28 @@
     .cs-col-item.has-val{background:var(--ok-bg);}
     .cs-qty-txt{color:var(--ok);font-size:12px;font-weight:600;}
     .cs-qty-inp{width:76px;background:transparent;border:none;color:var(--ok);font-size:12px;font-weight:600;text-align:center;font-family:inherit;padding:2px 4px;}
-    .cs-qty-inp:focus{outline:1px solid var(--ac2);border-radius:3px;background:var(--sf2);}
+    .cs-qty-inp:focus{outline:1px solid var(--ac2);border-radius:0;background:var(--sf2);}
     .cs-col-note{width:110px;min-width:110px;flex-shrink:0;border-right:1px solid var(--bd);height:25px;display:flex;align-items:center;padding:0 4px;}
     .cs-note-inp{width:100%;background:transparent;border:none;color:var(--tx2);font-size:11px;font-family:inherit;padding:2px 4px;}
-    .cs-note-inp:focus{outline:1px solid var(--bd);border-radius:3px;color:var(--tx);}
+    .cs-note-inp:focus{outline:1px solid var(--bd);border-radius:0;color:var(--tx);}
     .cs-col-del{width:72px;min-width:72px;flex-shrink:0;display:flex;align-items:center;justify-content:center;height:25px;gap:2px;}
-    .cs-del-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
+    .cs-del-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:0;}
     .cs-del-btn:hover{background:var(--err-bg);color:var(--err);}
-    .cs-edit-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
+    .cs-edit-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:0;}
     .cs-edit-btn:hover{background:var(--sf2);color:var(--ac2);}
-    .cs-tag-edit-inp{width:138px;background:var(--sf2);border:1px solid var(--ac2);border-radius:4px;color:var(--tx);font-size:12px;font-weight:600;padding:2px 6px;font-family:inherit;}
+    .cs-tag-edit-inp{width:138px;background:var(--sf2);border:1px solid var(--ac2);border-radius:0;color:var(--tx);font-size:12px;font-weight:600;padding:2px 6px;font-family:inherit;}
     .cs-tag-edit-inp:focus{outline:none;}
 
     /* 작업물량 */
     .wv-inp{width:100%;background:transparent;border:none;color:var(--tx);font-size:12px;font-family:inherit;padding:3px 6px;text-align:right;}
-    .wv-inp:focus{outline:1px solid var(--ac2);border-radius:3px;background:var(--sf2);}
+    .wv-inp:focus{outline:1px solid var(--ac2);border-radius:0;background:var(--sf2);}
     .wv-inp.lft{text-align:left;}
     .wv-num{color:var(--ac2);font-weight:600;font-size:12px;}
-    .wv-del-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
+    .wv-del-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:0;}
     .wv-del-btn:hover{background:var(--err-bg);color:var(--err);}
 
     /* Toast */
-    #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--sf);border:1px solid var(--bd);border-radius:20px;padding:8px 18px;font-size:12px;color:var(--tx);opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.18);}
+    #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--sf);border:1px solid var(--bd);border-radius:0;padding:8px 18px;font-size:12px;color:var(--tx);opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.18);}
     #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
     /* 모바일은 PC와 동일한 레이아웃을 그대로 축소해서 보여주고 핀치줌으로 확인하는 방식이라
