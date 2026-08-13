@@ -102,7 +102,11 @@
     tbody tr{transition:background .1s;}   /* 행 구분선은 아래 td의 border-top이 그린다(기준과 동일) */
     tbody tr:hover{background:var(--sf2);}
     td{padding:0 7px;height:25px;font-size:12px;text-align:center;vertical-align:middle;border-right:1px solid var(--bd);border-top:1px solid var(--bd);}
-    td.lft{text-align:left;font-weight:500;}
+    /* 1열 기준(2026-08-13): 이름형은 왼쪽 정렬 + 굵기 400. 다른 화면 1열과 맞춘 값이다. */
+    td.lft{text-align:left;font-weight:400;}
+    /* 합계 행만 예외. td.lft(0-1-1)가 tfoot td(0-0-2)보다 우선순위가 높아서, 위에서 굵기를
+       내리면 "합 계" 글자만 400이 되고 옆 숫자는 700으로 남아 어긋난다. */
+    tfoot td.lft{font-weight:700;}
     td.unit{color:var(--tx2);}   /* 글자 크기는 다른 열과 같은 12px — 단위만 작으면 서식이 달라 보인다(2026-08-12) */
     tfoot td{background:var(--head-bg);font-weight:700;font-size:12px;border-top:1px solid var(--bd);padding:0 7px;height:25px;text-align:center;}
     input[type=number]{appearance:textfield;-moz-appearance:textfield;}
@@ -159,7 +163,8 @@
     .cs-row{display:flex;align-items:center;border-bottom:1px solid var(--bd);min-width:max-content;height:25px;}
     .cs-row:hover{background:var(--sf2);}
     .cs-row:hover .cs-col-tag{background:var(--sf2);}
-    .cs-col-tag{width:130px;min-width:130px;flex-shrink:0;position:sticky;left:0;z-index:5;background:var(--sf);border-right:1px solid var(--bd);font-size:12px;font-weight:600;padding:0 8px;height:25px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    /* 1열 기준(2026-08-13): 이름형 150px · 왼쪽 · 굵기 400 — 다른 4개 화면 1열과 동일 */
+    .cs-col-tag{width:150px;min-width:150px;flex-shrink:0;position:sticky;left:0;z-index:5;background:var(--sf);border-right:1px solid var(--bd);font-size:12px;font-weight:400;padding:0 8px;height:25px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .cs-hdr .cs-col-tag{background:var(--head-bg);z-index:25;}
     /* 실제 폭은 JS가 W_ITEM으로 인라인 지정한다 — 여기 값은 그 예비값이라 W_ITEM과 같이 둔다. */
     .cs-col-item{width:112px;min-width:112px;flex-shrink:0;border-right:1px solid var(--bd);height:25px;display:flex;align-items:center;justify-content:center;position:relative;}
@@ -175,7 +180,7 @@
     .cs-del-btn:hover{background:var(--err-bg);color:var(--err);}
     .cs-edit-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;}
     .cs-edit-btn:hover{background:var(--sf2);color:var(--ac2);}
-    .cs-tag-edit-inp{width:118px;background:var(--sf2);border:1px solid var(--ac2);border-radius:4px;color:var(--tx);font-size:12px;font-weight:600;padding:2px 6px;font-family:inherit;}
+    .cs-tag-edit-inp{width:138px;background:var(--sf2);border:1px solid var(--ac2);border-radius:4px;color:var(--tx);font-size:12px;font-weight:600;padding:2px 6px;font-family:inherit;}
     .cs-tag-edit-inp:focus{outline:none;}
 
     /* 작업물량 */
@@ -283,7 +288,7 @@
            table{width:100%;table-layout:fixed}이라 min-width가 없으면 항상 창 폭에 맞는다. -->
       <table>
         <thead><tr>
-          <th class="lft" style="width:160px">작업분류</th>
+          <th class="lft" style="width:150px">작업분류</th>
           <th style="width:52px">단위</th><th style="width:90px">계획수량</th>
           <!-- 전일누계 열은 화면에서 삭제(2026-08-12 사용자 요청). 데이터(d.prev)는 그대로 두고
                누계(=전일누계+금일)·공정률·CSV 계산에는 계속 쓰인다 — 표시만 뺀 것이다. -->
