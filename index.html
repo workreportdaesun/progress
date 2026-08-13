@@ -8,6 +8,8 @@
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- 차트(2026-08-13). supabase-js와 같은 CDN·같은 방식(메이저 고정). -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <!-- 공정관리는 현장관리자 이상. 작업자(worker)는 출퇴근체크로 돌려보낸다. -->
 <script src="/report/role-gate.js" data-require="manager"></script>
 <!-- ?embed=1 이면 다른 앱(인원투입계획/실투입) 탭 안의 iframe이다 — 자기 헤더·PIN·플로팅
@@ -92,6 +94,13 @@
     /* Proc table */
     /* 2026-08-13: 표 틀은 직각(radius 0) — status·material과 동일. 되돌리려면 8px로. */
     .tbl-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:0;margin-bottom:16px;overflow:auto;}
+    /* 표(왼쪽) + 차트(오른쪽) 반반(2026-08-13 사용자 지시). 이 표는 열 폭 합계가 694px이라
+       1600 이상 화면의 절반에는 들어간다. 좁으면 차트를 아래로 내린다. */
+    .proc-split{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+    .proc-split .tbl-wrap{margin-bottom:0;}
+    .chartpane{border:1px solid var(--bd);background:var(--sf);padding:10px;min-width:0;margin-bottom:16px;}
+    .chartpane canvas{display:block;}
+    @media (max-width:1400px){ .proc-split{grid-template-columns:1fr;} .chartpane{height:280px !important;} }
     table{width:100%;border-collapse:collapse;table-layout:fixed;}
     td,th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     /* ── 표 서식은 인원투입계획/실투입의 출력일지(table.dt)를 기준으로 통일(2026-08-12) ──
@@ -284,6 +293,7 @@
       <div class="proc-sum-bar"><div class="proc-sum-fill" id="proc-sum-fill" style="width:0%"></div></div>
       <span class="proc-sum-sub" id="proc-sum-sub"></span>
     </div>
+    <div class="proc-split">
     <div class="tbl-wrap">
       <!-- min-width:840px 제거(2026-08-13 사용자 요청) — 열 폭 합계는 694px인데 840px로 벌려놔서
            넘칠 이유가 없는데도 가로 스크롤바가 생겼다(전일누계 72px을 뺀 뒤 이 값을 안 줄인 탓).
@@ -301,6 +311,8 @@
         <tbody id="proc-tbody"></tbody>
         <tfoot id="proc-tfoot"></tfoot>
       </table>
+    </div>
+    <div class="chartpane"><canvas id="procChart"></canvas></div>
     </div>
   </div>
 </div>
@@ -732,10 +744,12 @@ function procActual(d){
 function renderTable(){
   setTimeout(setProcWrapHeight,0);   // 다시 그린 뒤 위쪽 요소 높이가 바뀌었을 수 있다
   const editable=procEditMode&&!reportSynced;
+  procChartRows=[];   // 아래 map이 표에 그리는 값을 그대로 담는다(차트가 다시 계산하지 않게)
   document.getElementById('proc-tbody').innerHTML=procData.map((d,i)=>{
     const cum=d.prev+d.today;
     const actual=procActual(d);
     const raw=d.plan>0?Math.min(+(actual/d.plan*100).toFixed(1),100):0;
+    if(d.plan>0) procChartRows.push({item:d.item, pct:raw});
     const col=COLORS[i%COLORS.length],c1=pctColor(raw);
     return`<tr>
       <td class="lft">${d.item}</td><td class="unit">${d.unit}</td>
@@ -748,6 +762,33 @@ function renderTable(){
     </tr>`;
   }).join('');
   renderFooter();
+  drawProcChart();
+}
+let procChartRows=[];
+let _procChart=null;
+/* 작업분류별 진행률. 막대 색은 표의 진행률 글자색(pctColor)과 같은 규칙을 쓴다 —
+   같은 화면에서 "빨강=늦음"의 기준이 두 개면 안 된다. */
+function drawProcChart(){
+  if(typeof Chart==='undefined')return;
+  const el=document.getElementById('procChart');
+  if(!el||!el.offsetParent)return;              // 숨은 탭은 폭이 0이라 그려도 찌그러진다
+  if(_procChart)_procChart.destroy();           // 안 지우면 마우스오버가 겹치고 메모리가 샌다
+  const rows=procChartRows;
+  _procChart=new Chart(el,{
+    type:'bar',
+    data:{labels:rows.map(r=>r.item),
+      datasets:[{label:'공정률', data:rows.map(r=>r.pct),
+        backgroundColor:rows.map(r=>pctColor(r.pct)), borderWidth:0, borderRadius:0, barPercentage:.8}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{backgroundColor:'#1A2332',titleFont:{size:12,weight:'700'},bodyFont:{size:12},
+                 padding:9,cornerRadius:0,boxWidth:10,boxHeight:10,
+                 callbacks:{label:it=>' '+it.parsed.x+'%'}}},
+      // 캔버스에는 CSS 변수가 안 통하므로 --bd2와 같은 값을 직접 쓴다.
+      scales:{x:{beginAtZero:true,max:100,grid:{color:'#E6EDF5'},border:{display:false},
+                 ticks:{color:'#5A7A9A',font:{size:10.5},callback:v=>v+'%'}},
+              y:{grid:{display:false},border:{color:'#D1DCE8'},ticks:{color:'#5A7A9A',font:{size:10.5}}}}}
+  });
 }
 function renderFooter(){
   const tp=procData.reduce((a,d)=>a+(d.plan||0),0);
@@ -925,7 +966,12 @@ function setProcWrapHeight(){
   var wrap=page.querySelector('.tbl-wrap');
   if(!wrap) return;
   var top=wrap.getBoundingClientRect().top+(window.scrollY||0);
-  wrap.style.height=Math.max(200, Math.floor(window.innerHeight-top-24))+'px';
+  var h=Math.max(200, Math.floor(window.innerHeight-top-24));
+  wrap.style.height=h+'px';
+  // 옆 차트도 같은 높이로. Chart.js는 부모 높이를 보므로 안 주면 0px이 되어 안 보인다.
+  var pane=page.querySelector('.chartpane');
+  if(pane && window.innerWidth>1400) pane.style.height=h+'px';
+  if(pane) requestAnimationFrame(drawProcChart);
 }
 window.addEventListener('resize', setProcWrapHeight);
 function setWrapHeight(){
