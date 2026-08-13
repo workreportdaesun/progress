@@ -90,7 +90,8 @@
     @keyframes spin{to{transform:rotate(360deg);}}
 
     /* Proc table */
-    .tbl-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:8px;margin-bottom:16px;overflow:auto;}
+    /* 2026-08-13: 표 틀은 직각(radius 0) — status·material과 동일. 되돌리려면 8px로. */
+    .tbl-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:0;margin-bottom:16px;overflow:auto;}
     table{width:100%;border-collapse:collapse;table-layout:fixed;}
     td,th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     /* ── 표 서식은 인원투입계획/실투입의 출력일지(table.dt)를 기준으로 통일(2026-08-12) ──
@@ -126,7 +127,7 @@
        검색창(.cs-search 30px)과 같은 높이로 고정하고, 좌우 여백만 준다(세로는 가운데 정렬).
        높이를 직접 박았으므로 숫자(.proc-sum-val)는 30px 안에 들어가는 크기여야 한다. */
     .proc-sum{display:flex;align-items:center;gap:12px;padding:0 14px;height:30px;margin-bottom:10px;
-      background:var(--head-bg);border:1px solid var(--bd);border-radius:8px;}
+      background:var(--head-bg);border:1px solid var(--bd);border-radius:0;}   /* 바로 아래 표와 같은 폭이라 직각으로 맞춤(2026-08-13) */
     .proc-sum-lbl{font-size:12px;font-weight:700;color:var(--tx2);white-space:nowrap;}
     .proc-sum-val{font-size:17px;font-weight:800;line-height:1;white-space:nowrap;min-width:56px;}
     .proc-sum-bar{flex:1;height:10px;background:var(--bd);border-radius:5px;overflow:hidden;min-width:80px;}
@@ -148,7 +149,8 @@
     .cs-select:focus{outline:none;border-color:var(--ac2);}
 
     /* Virtual scroll */
-    .cs-wrap{border:1px solid var(--bd);border-radius:8px;overflow:auto;background:var(--sf);position:relative;}
+    /* 직각(2026-08-13). 여기는 특히 1열이 position:sticky라 둥근 왼쪽 모서리가 TAG NO. 칸을 물었다. */
+    .cs-wrap{border:1px solid var(--bd);border-radius:0;overflow:auto;background:var(--sf);position:relative;}
     /* 선 굵기는 표 전체가 1px로 통일(2026-08-12) — 헤더 아래와 TAG NO. 열만 2px이라
        다른 열·행보다 눈에 띄게 굵었다. */
     .cs-hdr{display:flex;position:sticky;top:0;z-index:20;background:var(--head-bg);border-bottom:1px solid var(--bd);min-width:max-content;}
