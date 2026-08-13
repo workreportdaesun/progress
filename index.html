@@ -118,10 +118,13 @@
     .factor-inp:focus{outline:none;border-color:var(--ac2);}
     /* 전체 공정률 요약(2026-08-12 요청) — 합계 행은 표 맨 아래라 분류가 많으면 스크롤해야
        보인다. 같은 값(FACTOR 가중평균)을 표 위에 한 번 더 크게 보여준다. */
-    .proc-sum{display:flex;align-items:center;gap:12px;padding:9px 14px;margin-bottom:10px;
+    /* 2026-08-13: 상자가 너무 높다는 지적 — 위아래 패딩 9px + 숫자 22px 탓에 42px이었다.
+       검색창(.cs-search 30px)과 같은 높이로 고정하고, 좌우 여백만 준다(세로는 가운데 정렬).
+       높이를 직접 박았으므로 숫자(.proc-sum-val)는 30px 안에 들어가는 크기여야 한다. */
+    .proc-sum{display:flex;align-items:center;gap:12px;padding:0 14px;height:30px;margin-bottom:10px;
       background:var(--head-bg);border:1px solid var(--bd);border-radius:8px;}
     .proc-sum-lbl{font-size:12px;font-weight:700;color:var(--tx2);white-space:nowrap;}
-    .proc-sum-val{font-size:22px;font-weight:800;line-height:1;white-space:nowrap;min-width:64px;}
+    .proc-sum-val{font-size:17px;font-weight:800;line-height:1;white-space:nowrap;min-width:56px;}
     .proc-sum-bar{flex:1;height:10px;background:var(--bd);border-radius:5px;overflow:hidden;min-width:80px;}
     .proc-sum-fill{height:100%;border-radius:5px;transition:width .4s;}
     .proc-sum-sub{font-size:11px;color:var(--tx2);white-space:nowrap;}
