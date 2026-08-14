@@ -600,8 +600,8 @@ async function initApp(){
   checkQtyData=localCheckQtyData;
   checkVolData=(scv||[]).map(r=>({tagNo:r.tagNo||'',qty:r.qty||{},note:r.note||''}));
 
-  const today=new Date().toISOString().slice(0,10);
-  const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  const today=ymdLocal(new Date());
+  const yest=ymdLocal(new Date(Date.now()-86400000));
   document.getElementById('prev-date').value=sprev||yest;
   document.getElementById('today-date').value=stod||today;
   // 작업물량 표는 삭제됐다(2026-08-10) — 관련 입력칸이 더 이상 없으므로 있을 때만 건드린다.
@@ -711,7 +711,7 @@ function setVolToday(){
   var _t=document.getElementById('vol-today-date'), _p=document.getElementById('vol-prev-date');
   if(!_t||!_p) return;   // 작업물량 표 삭제됨
   _t.value=today();
-  _p.value=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  _p.value=yesterday();
   calcVolAndRender();
 }
 function handleVolJSONImport(input){
@@ -1462,10 +1462,17 @@ function parseExcelDate(val){
   return'';
 }
 function pctColor(p){return p>=100?'#3B6D11':p>=70?'#185FA5':p>=40?'#BA7517':'#A32D2D';}
-function today(){return new Date().toISOString().slice(0,10);}
+/* 날짜는 반드시 로컬(KST) 기준으로 만든다.
+   toISOString()은 UTC라 한국 시간 00:00~09:00 사이에 '어제' 날짜가 나온다.
+   작업일보(work-report)·출퇴근(work-checkin)의 todayStr()과 같은 방식으로 맞췄다(2026-08-14). */
+function ymdLocal(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function today(){return ymdLocal(new Date());}
+function yesterday(){return ymdLocal(new Date(Date.now()-86400000));}
 function setToday(){
   document.getElementById('today-date').value=today();
-  document.getElementById('prev-date').value=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  document.getElementById('prev-date').value=yesterday();
   calcAndRender();
 }
 
