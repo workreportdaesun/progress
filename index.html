@@ -372,8 +372,10 @@ if(!localStorage.getItem('member_id')){ location.href='/report/app/login.html'; 
 // ── 작업일보 관리자(report/app/admin.html)의 공종별 공정률과 동일한 값을 그대로 읽어와서
 // 보여준다(2026-08-01) — "작업수량" 탭은 이제 읽기 전용, 수정은 admin.html에서만 한다.
 // report/app/admin.html·index.html과 같은 Supabase 프로젝트를 그대로 재사용.
-var SUPABASE_URL='https://feymoykefzfwucbrqoja.supabase.co';
-var SUPABASE_KEY='sb_publishable_ANT6G7_ka3IPHRk_4vLtBg_7G9NWW7i';
+// 2026-08-22: 다른 현장/회사가 각자 다른 Supabase에 연결해 쓸 수 있도록, site-setup.html에서
+// 저장한 값이 있으면 그걸 우선 쓰고 없으면 이 현장(대선이엔씨) 기본값을 그대로 쓴다.
+var SUPABASE_URL=localStorage.getItem('site_supabase_url')||'https://feymoykefzfwucbrqoja.supabase.co';
+var SUPABASE_KEY=localStorage.getItem('site_supabase_key')||'sb_publishable_ANT6G7_ka3IPHRk_4vLtBg_7G9NWW7i';
 var sbClient=(typeof supabase!=='undefined')?supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
 var reportSynced=false, syncedAt=null;
 /* Connection은 규격(FROM/TO)으로 방향을 골라 입력 — 한쪽만 하면 0.5, 양쪽 다 하면 1로 집계
