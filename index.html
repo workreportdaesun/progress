@@ -1013,11 +1013,14 @@ async function loadCatSettings(){
     var res=await sbClient.from('app_settings').select('cats_by_menu,item_unit').eq('id','global').single();
     settingsItemUnit=(res.data && res.data.item_unit) || {};
     settingsCatList=sikongCatsFrom(res.data && res.data.cats_by_menu);
+    if(res.data) lastCatStructKey=catStructKeyOf(res.data);
     return settingsCatList.length>0;
   }catch(e){ console.error('작업분류 목록 불러오기 실패', e); return false; }
 }
 /* 작업일보에서 분류를 추가/이름변경/순서변경하거나 단위를 바꾸면 새로고침 없이 바로 따라간다 —
    report/app/admin.html의 subscribeAdminSettingsRealtime과 같은 테이블·같은 필터. */
+var lastCatStructKey='';
+function catStructKeyOf(o){ return JSON.stringify([o.cats_by_menu||{}, o.item_unit||{}]); }
 function subscribeSettingsRealtime(){
   if(!sbClient || !sbClient.channel) return;
   sbClient.channel('app_settings_changes_progress')
@@ -1026,6 +1029,11 @@ function subscribeSettingsRealtime(){
       settingsItemUnit=payload.new.item_unit || {};
       settingsCatList=sikongCatsFrom(payload.new.cats_by_menu);
       rebuildCheckCols();
+      /* 다른 앱과 같은 문구·같은 판단 기준(구조가 실제로 바뀐 경우에만) — 계획수량 등 무관한
+         저장까지 매번 알리면 거슬려서다(2026-09-14). */
+      var k=catStructKeyOf(payload.new);
+      if(lastCatStructKey && k!==lastCatStructKey) showToast('⚙️ 설정이 업데이트되어 반영되었습니다');
+      lastCatStructKey=k;
     })
     .subscribe();
 }
